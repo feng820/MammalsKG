@@ -2,3 +2,4 @@
 backend/KGConstruction/venv
 backend/KGConstruction/*.json
 backend/KGConstruction/.idea/
+.idea/
