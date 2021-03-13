@@ -32,7 +32,8 @@ def load_wiki():
                 subspecies.append({
                     "id": entry['subspecies'].split('entity/')[1],
                     "name": entry['subspeciesLabel'],
-                    "taxonName": entry['taxonName']
+                    "taxonName": entry['taxonName'],
+                    "status": entry.get('statusLabel')
                 })
         json.dump(mammal_dict, f_out)
 
