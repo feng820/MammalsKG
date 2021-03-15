@@ -1,10 +1,7 @@
 import json
 import sys
 import requests
-import re
-import lxml
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
 import os.path
 
 
@@ -15,29 +12,12 @@ def load_json(eol_mammal_link_json):
         data = json.load(json_file)
         for key in data:
             id_links[key] = data[key]
-
     json_file.close()
-
     return id_links
 
 
 def store_json(id_links, eol_mammal_traits):
-    # with open(eol_mammal_traits, "w") as outfile:
-    #     for id in id_links:
-    #         eol_id = os.path.basename(id_links[id])  # String type id
-    #         # eol_id = "328338"
-    #         single_page = parse_traits(eol_id)
-    #         if single_page:
-    #             relations = pred_prey(eol_id)
-    #             single_page.update(relations)
-    #             outfile.write(json.dumps(single_page))
-    #             outfile.write("\n")
-    #
-    #     # json.dump(mammal_fields, outfile)
-    # outfile.close()
-
     out_dict = {}
-    # counter = 0
     for id in id_links:
         eol_id = os.path.basename(id_links[id])
         single_page = parse_traits(eol_id)
@@ -45,13 +25,9 @@ def store_json(id_links, eol_mammal_traits):
             relations = pred_prey(eol_id)
             single_page.update(relations)
             out_dict[id] = single_page
+            print(id + " crawled")
         else:
-            print("Catch page not found")
-
-        # if counter == 10:
-        #     break
-        # counter += 1
-
+            print(id + " not crawled")
     outfile = open(eol_mammal_traits, "w")
     json.dump(out_dict, outfile)
     outfile.close()
@@ -75,10 +51,11 @@ def parse_traits(eol_id):
         for trait in traits:
             for my_trait in my_traits:  # Find all traits to extract
                 # Format trait text, make sure habitat breadth is not include!
-                if my_trait in trait.h3.text.strip().lower() and trait.h3.text.strip().lower() != "habitat breadth":
+                if my_trait in trait.h3.text.strip().lower() and trait.h3.text.strip().lower() != "habitat breadth"\
+                        and trait.h3.text.strip().lower() != "body mass":
                     # in page to match with my trait
                     tmp = trait.find_next_sibling()
-                    while tmp.name == "li":
+                    while tmp and tmp.name == "li":  # Make sure tmp.name is not None
                         trait_val = tmp.find('div', {'class': 'a js-data-val'})
                         # Check if trait val has link property or not
                         if trait_val:
@@ -151,12 +128,6 @@ def parse_traits(eol_id):
                         else:
                             pass
 
-                        # if not trait_mod:
-                        #     collection[my_trait].append(trait_val)
-                        # else:
-                        #     trait_mod = trait_mod.text.strip()
-                        #     collection[my_trait].append((trait_val, trait_mod))
-
                         tmp = tmp.find_next_sibling()
 
                 elif trait.h3.text.strip().lower() == "habitat breadth":
@@ -172,17 +143,21 @@ def pred_prey(eol_id):
     single_pred_prey = {"img": None, "predator": [], "prey": [], "competitor": []}
     raw_response = requests.get("https://eol.org/api/pages/" + eol_id + "/pred_prey.json")
 
-    for data in raw_response.json()["nodes"]:
-        group = data["group"]
-        if group in ["predator", "prey", "competitor"]:  # dict keys
-            single_pred_prey[group].append({"id": data["id"], "shortName": data["shortName"],
-                                            "canonicalName": data["canonicalName"],
-                                            "icon": data["icon"]})
-        elif group == "source":  # current type is source (the target itself), store img instead
-            single_pred_prey["img"] = data["icon"].replace("130x130.jpg", "580x360.jpg")  # convert img quality
-        else:
-            print("Unknown pred_prey type found" + group)
-            pass
+    try:
+        for data in raw_response.json()["nodes"]:
+            group = data["group"]
+            if group in ["predator", "prey", "competitor"]:  # dict keys
+                single_pred_prey[group].append({"id": data["id"], "shortName": data["shortName"],
+                                                "canonicalName": data["canonicalName"],
+                                                "icon": data["icon"]})
+            elif group == "source":  # current type is source (the target itself), store img instead
+                single_pred_prey["img"] = data["icon"].replace("130x130.jpg", "580x360.jpg")  # convert img quality
+            else:
+                print("Unknown pred_prey type found" + group)
+                pass
+    except ValueError:
+        print("Decoding JSON has failed")
+
     # If any fields don't exist, return key with empty list
     return single_pred_prey
 
@@ -193,8 +168,6 @@ def main(argv):
 
     id_links = load_json(eol_mammal_links_json)
     store_json(id_links, eol_mammal_traits_json)
-
-    # parse_traits("328338")
 
 
 if __name__ == "__main__":
