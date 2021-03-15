@@ -41,6 +41,7 @@ def parse_traits(eol_id):
     collection = {"eol_id": eol_id, "mass": [], "length": [], "conservation status": [], "life span": [],
                   "ecoregion": [], "geographic distribution includes": [], "geographic range (size of area)": [],
                   "habitat": [], "latitude": [], "longitude": []}
+
     if raw_response.status_code == 200:
         response = raw_response.content
         soup = BeautifulSoup(response, 'lxml')
@@ -67,20 +68,15 @@ def parse_traits(eol_id):
                         trait_mod = tmp.find('div', {'class': 'trait-mod'})
                         # dict val type is either str or tuple
                         if not trait_mod:
-                            trait_mod = None
-                            # collection.setdefault(my_trait, []).append(trait_val)
                             collection[my_trait].append(trait_val)
 
                         else:
                             trait_mod = trait_mod.text.strip()
-                            # collection.setdefault(my_trait, []).append((trait_val, trait_mod))
                             collection[my_trait].append((trait_val, trait_mod))
 
                         tmp = tmp.find_next_sibling()
 
                 elif trait.h3.text.strip().lower() == "habitat breadth":
-                    # print("Habitat breadth")
-                    # print(trait.h3.text.strip().lower())
                     pass
                 else:
                     pass
@@ -94,8 +90,6 @@ def pred_prey(eol_id):
     raw_response = requests.get("https://eol.org/api/pages/" + eol_id + "/pred_prey.json")
     for data in raw_response.json()["nodes"]:
         group = data["group"]
-        # print(group)
-        # print(data['group'])
         if group in ["predator", "prey", "competitor"]:  # dict keys
             single_pred_prey[group].append({"id": data["id"], "shortName": data["shortName"],
                                             "canonicalName": data["canonicalName"],
@@ -112,7 +106,6 @@ def main(argv):
     eol_mammal_traits_json = "./eol_mammal_trait.all"
 
     id_links = load_json(eol_mammal_links_json)
-    # print(id_links)
     store_json(id_links, eol_mammal_traits_json)
 
     # parse_traits("328338")
