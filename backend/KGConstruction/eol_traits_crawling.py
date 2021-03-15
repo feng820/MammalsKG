@@ -22,25 +22,44 @@ def load_json(eol_mammal_link_json):
 
 
 def store_json(id_links, eol_mammal_traits):
-    with open(eol_mammal_traits, "w") as outfile:
-        for id in id_links:
-            eol_id = os.path.basename(id_links[id])  # String type id
-            # eol_id = "328338"
-            single_page = parse_traits(eol_id)
-            if single_page:
-                relations = pred_prey(eol_id)
-                single_page.update(relations)
-                outfile.write(json.dumps(single_page))
-                outfile.write("\n")
+    # with open(eol_mammal_traits, "w") as outfile:
+    #     for id in id_links:
+    #         eol_id = os.path.basename(id_links[id])  # String type id
+    #         # eol_id = "328338"
+    #         single_page = parse_traits(eol_id)
+    #         if single_page:
+    #             relations = pred_prey(eol_id)
+    #             single_page.update(relations)
+    #             outfile.write(json.dumps(single_page))
+    #             outfile.write("\n")
+    #
+    #     # json.dump(mammal_fields, outfile)
+    # outfile.close()
 
-        # json.dump(mammal_fields, outfile)
+    out_dict = {}
+    # counter = 0
+    for id in id_links:
+        eol_id = os.path.basename(id_links[id])
+        single_page = parse_traits(eol_id)
+        if single_page:
+            relations = pred_prey(eol_id)
+            single_page.update(relations)
+            out_dict[id] = single_page
+        else:
+            print("Catch page not found")
+
+        # if counter == 10:
+        #     break
+        # counter += 1
+
+    outfile = open(eol_mammal_traits, "w")
+    json.dump(out_dict, outfile)
     outfile.close()
 
 
 def parse_traits(eol_id):
     raw_response = requests.get("https://eol.org/pages/" + eol_id + "/data")
-    # TODO: change eol_mass and eol_length to 0
-    collection = {"eol_id": eol_id, "eol_mass": None, "eol_length": None, "eol_life_span": None,
+    collection = {"eol_id": eol_id, "eol_mass": 0, "eol_length": 0, "eol_life_span": 0,
                   "eol_ecoregion": [], "eol_geographic_distribution": [], "eol_geographic_range":
                       None, "eol_habitat": []}
 
@@ -170,7 +189,7 @@ def pred_prey(eol_id):
 
 def main(argv):
     eol_mammal_links_json = "./eol_mammal_link.json"
-    eol_mammal_traits_json = "./eol_mammal_trait.all"
+    eol_mammal_traits_json = "./eol_mammal_trait.json"
 
     id_links = load_json(eol_mammal_links_json)
     store_json(id_links, eol_mammal_traits_json)
