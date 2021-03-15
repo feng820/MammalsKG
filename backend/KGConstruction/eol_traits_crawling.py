@@ -1,6 +1,7 @@
 import json
 import sys
 import requests
+import re
 import lxml
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -38,19 +39,20 @@ def store_json(id_links, eol_mammal_traits):
 
 def parse_traits(eol_id):
     raw_response = requests.get("https://eol.org/pages/" + eol_id + "/data")
-    collection = {"eol_id": eol_id, "mass": [], "length": [], "conservation status": [], "life span": [],
-                  "ecoregion": [], "geographic distribution includes": [], "geographic range (size of area)": [],
-                  "habitat": [], "latitude": [], "longitude": []}
+    # TODO: change eol_mass and eol_length to 0
+    collection = {"eol_id": eol_id, "eol_mass": None, "eol_length": None, "eol_life_span": None,
+                  "eol_ecoregion": [], "eol_geographic_distribution": [], "eol_geographic_range":
+                      None, "eol_habitat": []}
 
     if raw_response.status_code == 200:
         response = raw_response.content
         soup = BeautifulSoup(response, 'lxml')
 
         traits = soup.find_all("div", {"class": "data-section-head"})
-        my_traits = ["mass", "length", "conservation status", "life span", "ecoregion", "geographic distribution "
-                                                                                        "includes", "geographic range "
-                                                                                                    "(size of area)",
-                     "habitat", "latitude", "longitude"]
+        my_traits = ["mass", "length", "life span", "ecoregion", "geographic distribution "
+                                                                 "includes", "geographic range "
+                                                                             "(size of area)",
+                     "habitat"]
         for trait in traits:
             for my_trait in my_traits:  # Find all traits to extract
                 # Format trait text, make sure habitat breadth is not include!
@@ -67,12 +69,74 @@ def parse_traits(eol_id):
 
                         trait_mod = tmp.find('div', {'class': 'trait-mod'})
                         # dict val type is either str or tuple
-                        if not trait_mod:
-                            collection[my_trait].append(trait_val)
 
+                        if my_trait == "mass":
+                            # 单位是kg
+                            # trait_val = str(float(trait_val.replace(" g", "")) / 1000) + " kg"
+                            if trait_val.endswith(" g"):
+                                trait_val = round(float(trait_val.replace(" g", "")) / 1000, 3)
+                            else:
+                                trait_val = 0
+
+                            if not collection["eol_mass"]:  # If "mass" is empty yet
+                                if not trait_mod:
+                                    collection["eol_mass"] = trait_val
+                                else:
+                                    # collection["eol_mass"] = trait_val + trait_mod
+                                    collection["eol_mass"] = trait_val
+                            else:
+                                if trait_mod and trait_mod == "(adult)":
+                                    print("Replace mass with (adult) as trait_mode")
+                                    # collection["eol_mass"] = trait_val + trait_mod
+                                    collection["eol_mass"] = trait_val
+                        elif my_trait == "length":
+                            # 单位是m
+                            if trait_val.endswith(" mm"):
+                                trait_val = round(float(trait_val.replace(" mm", "")) / 1000, 3)
+                            elif trait_val.endswith(" m"):
+                                trait_val = float(trait_val.replace(" m", ""))
+                            else:
+                                trait_val = 0
+
+                            if not collection["eol_length"]:
+                                if not trait_mod:
+                                    collection["eol_length"] = trait_val
+                                else:
+                                    collection["eol_length"] = trait_val
+                            else:
+                                pass
+                        elif my_trait == "life span":
+                            # 单位是years, max life span
+                            if trait_val.endswith(" months"):
+                                trait_val = round(float(trait_val.replace(" months", "")) / 12, 1)
+                            elif trait_val.endswith(" years"):
+                                trait_val = float(trait_val.replace(" years", ""))
+                            else:
+                                trait_val = 0
+
+                            if not collection["eol_life_span"]:
+                                if not trait_mod:
+                                    collection["eol_life_span"] = trait_val
+                                else:
+                                    collection["eol_life_span"] = trait_val
+                            else:
+                                pass
+                        elif my_trait == "ecoregion":
+                            collection["eol_ecoregion"].append(trait_val)
+                        elif my_trait == "geographic distribution includes":
+                            collection["eol_geographic_distribution"].append(trait_val)
+                        elif my_trait == "geographic range (size of area)":
+                            collection["eol_geographic_range"] = trait_val
+                        elif my_trait == "habitat":
+                            collection["eol_habitat"].append(trait_val)
                         else:
-                            trait_mod = trait_mod.text.strip()
-                            collection[my_trait].append((trait_val, trait_mod))
+                            pass
+
+                        # if not trait_mod:
+                        #     collection[my_trait].append(trait_val)
+                        # else:
+                        #     trait_mod = trait_mod.text.strip()
+                        #     collection[my_trait].append((trait_val, trait_mod))
 
                         tmp = tmp.find_next_sibling()
 
@@ -86,7 +150,7 @@ def parse_traits(eol_id):
 
 
 def pred_prey(eol_id):
-    single_pred_prey = {"img": "", "predator": [], "prey": [], "competitor": []}
+    single_pred_prey = {"img": None, "predator": [], "prey": [], "competitor": []}
     raw_response = requests.get("https://eol.org/api/pages/" + eol_id + "/pred_prey.json")
 
     for data in raw_response.json()["nodes"]:
