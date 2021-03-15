@@ -86,16 +86,19 @@ def parse_traits(eol_id):
 
 
 def pred_prey(eol_id):
-    single_pred_prey = {"predator": [], "prey": [], "competitor": []}
+    single_pred_prey = {"img": "", "predator": [], "prey": [], "competitor": []}
     raw_response = requests.get("https://eol.org/api/pages/" + eol_id + "/pred_prey.json")
+
     for data in raw_response.json()["nodes"]:
         group = data["group"]
         if group in ["predator", "prey", "competitor"]:  # dict keys
             single_pred_prey[group].append({"id": data["id"], "shortName": data["shortName"],
                                             "canonicalName": data["canonicalName"],
                                             "icon": data["icon"]})
+        elif group == "source":  # current type is source (the target itself), store img instead
+            single_pred_prey["img"] = data["icon"].replace("130x130.jpg", "580x360.jpg")  # convert img quality
         else:
-            # current type is source (the target itself), not need to store
+            print("Unknown pred_prey type found" + group)
             pass
     # If any fields don't exist, return key with empty list
     return single_pred_prey
