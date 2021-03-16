@@ -3,6 +3,41 @@ import requests
 import json
 
 
+def extract_keywords(key_tag, soup_obj, adw_dict):
+    extracted_keywords_name = [
+        "Habitat Regions",
+        "Terrestrial Biomes",
+        "Wetlands",
+        "Communication Channels",
+        "Primary Diet",
+        "Key Behaviors",
+        "Plant Foods",
+        "Animal Foods"
+    ]
+
+    section = soup_obj.select(key_tag)
+    if len(section) > 0:
+        section_parent = section[0].parent
+        keywords_list = section_parent.select('ul.keywords.donthyphenate')
+        for keyword_section in keywords_list:
+            li_lists = keyword_section.select('li')
+            header_key = None
+            content = []
+            for i in range(len(li_lists)):
+                if i == 0:
+                    header = li_lists[i].text
+                    if header not in extracted_keywords_name:
+                        break
+                    header_key = header.replace(' ', '_')
+                else:
+                    tag = li_lists[i].find('a')
+                    if not tag:
+                        tag = li_lists[i].find('span')
+                    content.append(tag.text)
+            if header_key:
+                adw_dict[header_key] = content
+
+
 def crawl():
     base_url = "https://animaldiversity.org"
     extracted_attribute_name = [
@@ -34,24 +69,16 @@ def crawl():
                 detail_soup_obj = BeautifulSoup(detail_info_resp.content, 'html.parser')
 
                 # Habitat
-                habitat_section = detail_soup_obj.select('#habitat')
-                if len(habitat_section) > 0:
-                    section_parent = habitat_section[0].parent
-                    keywords_list = section_parent.select('ul.keywords.donthyphenate')
-                    for keyword_section in keywords_list:
-                        li_lists = keyword_section.select('li')
-                        header = None
-                        content = []
-                        for i in range(len(li_lists)):
-                            if i == 0:
-                                header = li_lists[i].text.replace(' ', '_')
-                            else:
-                                tag = li_lists[i].find('a')
-                                if not tag:
-                                    tag = li_lists[i].find('span')
-                                content.append(tag.text)
-                        if header:
-                            species_adw_dict[header] = content
+                extract_keywords('#habitat', detail_soup_obj, species_adw_dict)
+
+                # Communication
+                extract_keywords('#communication', detail_soup_obj, species_adw_dict)
+
+                # Food Habits
+                extract_keywords('#food_habits', detail_soup_obj, species_adw_dict)
+
+                # behavior
+                extract_keywords('#behavior', detail_soup_obj, species_adw_dict)
 
                 # Physical Description
                 physical_description_section = detail_soup_obj.select('#physical_description')
@@ -89,7 +116,7 @@ def crawl():
                             for predator in predators:
                                 s = predator.text
                                 common_name = s[:s.find("(")]
-                                taxon_name = s[s.find("(")+1:s.find(")")]
+                                taxon_name = s[s.find("(") + 1:s.find(")")]
                                 content_list.append({
                                     'name': common_name,
                                     'taxonName': taxon_name
@@ -100,7 +127,7 @@ def crawl():
 
         cnt += 1
         print(cnt)
-    # print(adw_all_species_dict)
+
     with open("adw_species_info.json", 'w') as f_out:
         print(len(adw_all_species_dict))
         json.dump(adw_all_species_dict, f_out)
