@@ -48,7 +48,7 @@ def crawl_wikipedia():
             try:
                 page = wikipedia.page(ecoregion_name)
                 url = page.url
-            except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError)  as e:
+            except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError) as e:
                 print(e)
             if url:
                 print(ecoregion_name, url)
@@ -57,9 +57,10 @@ def crawl_wikipedia():
 
                 info_box = soup_obj.select('#mw-content-text > div.mw-parser-output > table.infobox > tbody > tr')
                 if len(info_box) > 0:
-                    summary = page.summary if page.summary else None
-                    if summary:
-                        value_dict['summary'] = summary
+                    value_dict['url'] = url
+                    # summary = page.summary if page.summary else None
+                    # if summary:
+                    #     value_dict['summary'] = summary
                     image = page.images[0] if len(page.images) > 0 else None
                     if image:
                         value_dict['image'] = image
