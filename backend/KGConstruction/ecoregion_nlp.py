@@ -1,13 +1,46 @@
 import wikipedia
-from bs4 import BeautifulSoup
-import requests
 import json
-import re
 import sys
 import spacy
 import en_core_web_lg
-import en_core_web_sm
 from spacy.matcher import Matcher
+
+
+# https://stackoverflow.com/questions/3368969/find-string-between-two-substrings
+def find_between(s, first, last):
+    try:
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
+        return s[start:end]
+    except ValueError:
+        return None
+
+
+def find_between_r(s, first, last):
+    try:
+        start = s.rindex(first) + len(first)
+        end = s.rindex(last, start)
+        return s[start:end]
+    except ValueError:
+        return None
+
+
+def load_json(ecoregion_info):
+    # Opening JSON file
+    id_data = {}
+    with open(ecoregion_info) as json_file:
+        data = json.load(json_file)
+        for key in data:
+            id_data[key] = data[key]
+    json_file.close()
+    return id_data
+
+
+def store_json(id_data, ecoregion_info_plus):
+    out_file = open(ecoregion_info_plus, 'w')
+    json.dump(id_data, out_file)
+    out_file.close()
+    return
 
 
 def parse_page(name):
@@ -15,7 +48,25 @@ def parse_page(name):
     print(page.url)
     page_content = page.content
     # print(page_content)
-    nlp(page_content)
+    # nlp(page_content)
+
+    # 找到下一个标题之间的内容
+    flora = find_between(page_content, "== Flora ==", "\n== ")
+    fauna = find_between(page_content, "== Fauna ==", "\n== ")
+    # print(fauna)
+    if flora:
+        flora_words = nlp(flora)
+    else:
+        flora_words = []
+    # print(flora_words)
+    if fauna:
+        fauna_words = nlp(fauna)
+    else:
+        fauna_words = []
+    # print(fauna_words)
+
+    out_dict = {'flora': flora_words, 'fauna': fauna_words}
+    return out_dict
 
 
 def nlp(content):
@@ -44,59 +95,43 @@ def nlp(content):
 
     spans = [doc[start:end] for match_id, start, end in phrase_matches]
     spans = spacy.util.filter_spans(spans)
-    print(spans)
 
+    out_list = []
+    for span in spans:
+        span = str(span)
+        if '(' in span and ')' in span:
+            taxonName = find_between(span, "(", ")")
+            name = find_between(span, "", " (")
+        else:
+            taxonName = span
+            name = None
 
-def test_nlp():
-    nlp = en_core_web_lg.load()
-    matcher = Matcher(nlp.vocab)
-    pattern = [{"LOWER": "hello"}, {"LOWER": "world"}]
-    matcher.add("HelloWorld", [pattern])
-    doc = nlp("hello world!")
-    matches = matcher(doc)
-    print(matches)
+        d = {'name': name, 'taxonName': taxonName}
+        out_list.append(d)
 
-
-def token_label():
-    nlp = en_core_web_lg.load()
-    doc = nlp("At lowest elevations the forests are characterized by the sclerophyllous evergreen holm oak (Quercus "
-              "ilex) and cork oak (Quercus suber), coniferous stone pine (Pinus pinea), and the decidous trees "
-              "Quercus pubescens, Fraxinus ornus, and Ostrya carpinifolia.")
-    # doc = nlp("Large mammals include roe deer (Capreolus capreolus), European wildcat (Felis silvestris), and crested "
-    #           "porcupine (Hystrix cristata). The Italian wolf (Canis lupus italicus) lives in the peninsular portion "
-    #           "of the ecoregion, and Sila and Pollino national parks are home to Italy's largest wolf population. "
-    #           "Wolves are absent from Sicily.")
-    # doc = nlp("North-facing plant communities: On north-facing slopes Silver fir (Abies alba) and European beech ("
-    #           "Fagus sylvatica) mix with Pinus nigra subsp. larico.")
-    doc = nlp("Indian grey hornbill (Ocyceros birostris), and Oriental pied hornbill (Anthracoceros "
-              "albirostris).Wetlands along the Ganges River and its tributaries support communities of resident and "
-              "migrant waterfowl, along with mugger crocodile (Crocodylus palustris) and gharial (Gavialis "
-              "gangeticus).")
-
-    # for ent in doc.ents:
-    #     print(f'{ent.text:15s} [{ent.label_}]')
-
-    # for match_id, start, end in phrase_matches:
-    #     string_id = nlp.vocab.strings[match_id]
-    #     span = doc[start:end]
-    #     print(match_id, string_id, start, end, span.text)
-
-    for token in doc:
-        print(token.text, token.pos_)
-
-
+    return out_list
 
 
 def main(argv):
     ecoregion_info = "./ecoregion_info.json"
+    ecoregion_info_plus = "./ecoregion_info_plus.json"
+
+    id_data = load_json(ecoregion_info)
 
     # name = "Southern Andean steppe"
     # name = "South Apennine mixed montane forests"
-    name = "Upper Gangetic Plains moist deciduous forests"
-    parse_page(name)
+    # name = "Upper Gangetic Plains moist deciduous forests"
+    # name = "Wyoming Basin shrub steppe"
+    # name = "Sri Lanka lowland rain forests"
+    # name = "Southeastern conifer forests"
+    # print(parse_page(name))
 
-    # test_nlp()
-    # token_label()
+    for id in id_data:
+        name = id_data[id]['name']
+        flora_fauna = parse_page(name)
+        id_data[id].update(flora_fauna)
+
+    store_json(id_data, ecoregion_info_plus)
 
 
 if __name__ == "__main__":
