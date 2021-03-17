@@ -37,6 +37,11 @@ def load_json(ecoregion_info):
 
 
 def store_json(id_data, ecoregion_info_plus):
+    for id in id_data:
+        name = id_data[id]['name']
+        flora_fauna = parse_page(name)
+        id_data[id].update(flora_fauna)
+
     out_file = open(ecoregion_info_plus, 'w')
     json.dump(id_data, out_file)
     out_file.close()
@@ -117,10 +122,6 @@ def main(argv):
     ecoregion_info_plus = "./ecoregion_info_plus.json"
 
     id_data = load_json(ecoregion_info)
-    for id in id_data:
-        name = id_data[id]['name']
-        flora_fauna = parse_page(name)
-        id_data[id].update(flora_fauna)
     store_json(id_data, ecoregion_info_plus)
 
 
