@@ -44,26 +44,26 @@ def store_json(id_data, ecoregion_info_plus):
 
 
 def parse_page(name):
-    page = wikipedia.page(name)
+    try:
+        page = wikipedia.page(name)
+    except wikipedia.exceptions.PageError as e:
+        print(e)
+        return {'flora': [], 'fauna': []}
+
     print(page.url)
     page_content = page.content
-    # print(page_content)
-    # nlp(page_content)
 
     # 找到下一个标题之间的内容
     flora = find_between(page_content, "== Flora ==", "\n== ")
     fauna = find_between(page_content, "== Fauna ==", "\n== ")
-    # print(fauna)
     if flora:
         flora_words = nlp(flora)
     else:
         flora_words = []
-    # print(flora_words)
     if fauna:
         fauna_words = nlp(fauna)
     else:
         fauna_words = []
-    # print(fauna_words)
 
     out_dict = {'flora': flora_words, 'fauna': fauna_words}
     return out_dict
@@ -117,20 +117,10 @@ def main(argv):
     ecoregion_info_plus = "./ecoregion_info_plus.json"
 
     id_data = load_json(ecoregion_info)
-
-    # name = "Southern Andean steppe"
-    # name = "South Apennine mixed montane forests"
-    # name = "Upper Gangetic Plains moist deciduous forests"
-    # name = "Wyoming Basin shrub steppe"
-    # name = "Sri Lanka lowland rain forests"
-    # name = "Southeastern conifer forests"
-    # print(parse_page(name))
-
     for id in id_data:
         name = id_data[id]['name']
         flora_fauna = parse_page(name)
         id_data[id].update(flora_fauna)
-
     store_json(id_data, ecoregion_info_plus)
 
 
