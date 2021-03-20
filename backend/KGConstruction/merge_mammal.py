@@ -10,6 +10,12 @@ def load_json(input_json):
     return id_data
 
 
+def store_json(out_json, all_mammals):
+    out = open(out_json, 'w')
+    json.dump(all_mammals, out)
+    out.close()
+
+
 def get_key_taxon(all_mammals):
     taxon_key = {}
     for key in all_mammals:
@@ -62,7 +68,6 @@ def check_adw_species_info(adw_species_info):
                 l = extract_nums(s, 1)
             else:
                 l = []
-            # print(l)
 
             if len(l) == 0:
                 pass
@@ -73,7 +78,6 @@ def check_adw_species_info(adw_species_info):
             else:
                 print(key + " Range_mass cannot has 3+ numbers")
                 l = []
-            # print(l)
             adw_species_info[key]["Range_mass"] = l
         else:
             adw_species_info[key]["Range_mass"] = []
@@ -112,7 +116,7 @@ def check_adw_species_info(adw_species_info):
                 l = []
 
             if len(l) == 0:
-                pass
+                l = 0
             elif len(l) == 1:
                 l = l[0]
             else:
@@ -132,7 +136,7 @@ def check_adw_species_info(adw_species_info):
                 l = []
 
             if len(l) == 0:
-                pass
+                l = 0
             elif len(l) == 1:
                 l = l[0]
             else:
@@ -141,6 +145,8 @@ def check_adw_species_info(adw_species_info):
             adw_species_info[key]["Average_lifespan_captivity"] = l
         else:
             adw_species_info[key]["Average_lifespan_captivity"] = 0
+        # Delete Known_Predators
+        adw_species_info[key].pop("Known_Predators", None)
 
     return adw_species_info
 
@@ -155,17 +161,37 @@ def extract_nums(s, precision):
     return l
 
 
-def update(all_mammals, to_merge):
+def update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_info, species_ecoregion_link):
     for key in all_mammals:
-        if key in to_merge:
-            all_mammals[key].update(to_merge[key])
+        if key in eol_mammal_trait:
+            all_mammals[key].update(eol_mammal_trait[key])
         else:
-            # print(key)
-            del all_mammals[key]  # If key not found in eol_mammal_trait_json, remove it
-            # all_mammals[key].update({"eol_id": None, "eol_mass": 0, "eol_length": 0, "eol_life_span": 0,
-            #                          "eol_ecoregion": [], "eol_geographic_distribution": [], "eol_geographic_range":
-            #                              None, "eol_habitat": [], "img": None, "predator": [], "prey": [],
-            #                          "competitor": []})
+            print(key + " not exist in eol")
+            # del all_mammals[key]  # If key not found in eol_mammal_trait_json, remove it
+            all_mammals[key].update({"eol_id": key, "eol_mass": 0, "eol_length": 0, "eol_life_span": 0,
+                                     "eol_ecoregion": [], "eol_geographic_distribution": [], "eol_geographic_range":
+                                         None, "eol_habitat": [], "img": None, "predator": [], "prey": [],
+                                     "competitor": []})
+        if key in adw_species_info:
+            all_mammals[key].update(adw_species_info[key])
+        else:
+            print(key + " not exist in adw")
+            all_mammals[key].update({"Habitat_Regions": [], "Terrestrial_Biomes": [], "Communication_Channel": [],
+                                     "Primary_Diet": [], "Plant_Foods": [], "Animal_Foods": [], "Key_Behaviors": [],
+                                     "Wetlands": [], "Range_mass": [], "Range_length": [], "Average_lifespan_wild":
+                                         0, "Average_lifespan_captivity": 0})
+        for subspecie in all_mammals[key]["subspecies"]:
+            if subspecie["id"] in subspecies_location_info:
+                subspecie.update({"subspecies_location_info": subspecies_location_info[subspecie["id"]]})
+            else:
+                print("subspecie key" + subspecie["id"] + "not exist in subspecies_location_info")
+                subspecie.update({"subspecies_location_info": []})
+        if key in species_ecoregion_link:
+            all_mammals[key].update({"species_ecoregion_link": species_ecoregion_link[key]})
+        else:
+            print(key + " not exist in species_ecoregion_link")
+            all_mammals[key].update({"species_ecoregion_link": []})
+
     return all_mammals
 
 
@@ -175,20 +201,26 @@ def main(argv):
     adw_species_info_json = "./adw_species_info.json"
     subspecies_location_info_json = "./subspecies_location_info.json"
     species_ecoregion_link_json = "./species_ecoregion_link.json"
+    out_json = "./kg_mammals.json"
 
     all_mammals = load_json(all_mammals_json)
     taxon_key = get_key_taxon(all_mammals)
-    # print(taxon_key)
     all_mammals = check_all_mammals(all_mammals)
-    # print(all_mammals)
     eol_mammal_trait = load_json(eol_mammal_trait_json)
-    # print(eol_mammal_trait)
 
     adw_species_info = load_json(adw_species_info_json)
     adw_species_info = check_adw_species_info(adw_species_info)
-    print(adw_species_info)
-    # all_mammals = update(all_mammals, eol_mammal_trait)
-    # print(all_mammals)
+
+    # key: subspecies_id
+    subspecies_location_info = load_json(subspecies_location_info_json)
+
+    # key: species_id
+    species_ecoregion_link = load_json(species_ecoregion_link_json)
+
+    kg_mammals = update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_info,
+                       species_ecoregion_link)
+
+    store_json(out_json, kg_mammals)
 
 
 if __name__ == "__main__":
