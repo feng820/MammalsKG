@@ -19,7 +19,8 @@ def store_json(out_json, all_mammals):
 def get_key_taxon(all_mammals):
     taxon_key = {}
     for key in all_mammals:
-        taxon = all_mammals[key]["taxonName"]
+        # Lower all taxonName
+        taxon = all_mammals[key]["taxonName"].lower().strip()
         taxon_key[taxon] = key
     return taxon_key
 
@@ -175,7 +176,7 @@ def update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_
         if key in adw_species_info:
             all_mammals[key].update(adw_species_info[key])
         else:
-            print(key + " not exist in adw")
+            # print(key + " not exist in adw")
             all_mammals[key].update({"Habitat_Regions": [], "Terrestrial_Biomes": [], "Communication_Channel": [],
                                      "Primary_Diet": [], "Plant_Foods": [], "Animal_Foods": [], "Key_Behaviors": [],
                                      "Wetlands": [], "Range_mass": [], "Range_length": [], "Average_lifespan_wild":
@@ -195,32 +196,46 @@ def update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_
     return all_mammals
 
 
+def check_ecoregion_info_plus(ecoregion_info_plus, taxon_key):
+    for key in ecoregion_info_plus:
+        faunas = ecoregion_info_plus[key]["fauna"]
+
+        mammal_ids = {"mammals": []}
+        for fauna in faunas:
+            taxon_name = fauna["taxonName"].lower().strip()
+            if taxon_name in taxon_key:
+                mammal_ids["mammals"].append(taxon_key[taxon_name])
+                # TODO: remove all mammals from faunas?
+
+        ecoregion_info_plus[key].update(mammal_ids)
+
+    return ecoregion_info_plus
+
+
 def main(argv):
     all_mammals_json = "./all_mammals.json"
     eol_mammal_trait_json = "./eol_mammal_trait.json"
     adw_species_info_json = "./adw_species_info.json"
     subspecies_location_info_json = "./subspecies_location_info.json"
     species_ecoregion_link_json = "./species_ecoregion_link.json"
+    ecoregion_info_plus_json = "./ecoregion_info_plus.json"
     out_json = "./kg_mammals.json"
 
     all_mammals = load_json(all_mammals_json)
     taxon_key = get_key_taxon(all_mammals)
     all_mammals = check_all_mammals(all_mammals)
     eol_mammal_trait = load_json(eol_mammal_trait_json)
-
     adw_species_info = load_json(adw_species_info_json)
     adw_species_info = check_adw_species_info(adw_species_info)
-
-    # key: subspecies_id
     subspecies_location_info = load_json(subspecies_location_info_json)
-
-    # key: species_id
     species_ecoregion_link = load_json(species_ecoregion_link_json)
-
     kg_mammals = update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_info,
                        species_ecoregion_link)
-
     store_json(out_json, kg_mammals)
+
+    ecoregion_info_plus = load_json(ecoregion_info_plus_json)
+    ecoregion_info_plus = check_ecoregion_info_plus(ecoregion_info_plus, taxon_key)
+    store_json(ecoregion_info_plus_json, ecoregion_info_plus)
 
 
 if __name__ == "__main__":
