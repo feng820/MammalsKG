@@ -34,7 +34,7 @@ def check_all_mammals(all_mammals):
 
 
 def check_adw_species_info(adw_species_info):
-    for key in adw_species_info:
+    for key in adw_species_info:  # TODO: check whitespace
         if "Habitat_Regions" not in adw_species_info[key]:
             adw_species_info[key]["Habitat_Regions"] = []
         if "Terrestrial_Biomes" not in adw_species_info[key]:
@@ -52,36 +52,107 @@ def check_adw_species_info(adw_species_info):
         if "Wetlands" not in adw_species_info[key]:
             adw_species_info[key]["Wetlands"] = []
         if "Range_mass" in adw_species_info[key]:
-            s = adw_species_info[key]["Range_mass"]
-            l = []
-            if s[-2:] == "g":
-                for t in s.split():
-                    try:
-                        l.append(round(float(t) / 1000, 3))
-                    except ValueError:
-                        pass
-                adw_species_info[key]["Range_mass"] = l
+            s = adw_species_info[key]["Range_mass"].replace(",", "").strip()
+            last = s.split()[-1]
+            if last == "g":
+                l = extract_nums(s, 1000)
             # "Range_mass": "115 (high)  kg"
             # "Range_mass": "males: 3,800 females: 1,800 (high)  kg"
-            elif s[-2:] == "kg":
+            elif last == "kg":
+                l = extract_nums(s, 1)
+            else:
+                l = []
+            # print(l)
 
+            if len(l) == 0:
+                pass
+            elif len(l) == 1:
+                l = [l[0], l[0]]
+            elif len(l) == 2:
+                l.sort()
+            else:
+                print(key + " Range_mass cannot has 3+ numbers")
+                l = []
+            # print(l)
+            adw_species_info[key]["Range_mass"] = l
         else:
             adw_species_info[key]["Range_mass"] = []
         if "Range_length" in adw_species_info[key]:
-            s = adw_species_info[key]["Range_length"]
-            l = []
-            for t in s.split():
-                try:
-                    l.append(round(float(t) / 100, 3))
-                except ValueError:
-                    pass
+            s = adw_species_info[key]["Range_length"].replace(",", "").strip()
+            last = s.split()[-1]
+            if last == "mm":
+                l = extract_nums(s, 1000)
+            elif last == "cm":
+                l = extract_nums(s, 100)
+            elif last == "m":
+                l = extract_nums(s, 1)
+            else:
+                l = []
+
+            if len(l) == 0:
+                pass
+            elif len(l) == 1:
+                l = [l[0], [0]]
+            elif len(l) == 2:
+                l.sort()
+            else:
+                print(key + " Range_length cannot has 3+ numbers")
+                l = []
             adw_species_info[key]["Range_length"] = l
         else:
             adw_species_info[key]["Range_length"] = []
         if "Average_lifespan_wild" in adw_species_info[key]:
+            s = adw_species_info[key]["Average_lifespan_wild"].replace(",", "").strip()
+            last = s.strip()[-1]
+            if last == "years":
+                l = extract_nums(s, 1)
+            elif last == "months":  # TODO: check correct
+                l = extract_nums(s, 12)
+            else:
+                l = []
+
+            if len(l) == 0:
+                pass
+            elif len(l) == 1:
+                l = l[0]
+            else:
+                print(key + " Average_lifespan_wild cannot has 2+ numbers")
+                l = 0
+            adw_species_info[key]["Average_lifespan_wild"] = l
+        else:
+            adw_species_info[key]["Average_lifespan_wild"] = 0
+        if "Average_lifespan_captivity" in adw_species_info[key]:
+            s = adw_species_info[key]["Average_lifespan_captivity"].replace(",", "").strip()
+            last = s.strip()[-1]
+            if last == "years":
+                l = extract_nums(s, 1)
+            elif last == "months":
+                l = extract_nums(s, 12)
+            else:
+                l = []
+
+            if len(l) == 0:
+                pass
+            elif len(l) == 1:
+                l = l[0]
+            else:
+                print(key + " Average_lifespan_captivity cannot has 2+ numbers")
+                l = 0
+            adw_species_info[key]["Average_lifespan_captivity"] = l
+        else:
+            adw_species_info[key]["Average_lifespan_captivity"] = 0
+
+    return adw_species_info
 
 
-
+def extract_nums(s, precision):
+    l = []
+    for t in s.split():
+        try:
+            l.append(round(float(t) / precision, 3))
+        except ValueError:
+            pass
+    return l
 
 
 def update(all_mammals, to_merge):
@@ -115,7 +186,8 @@ def main(argv):
 
     adw_species_info = load_json(adw_species_info_json)
     adw_species_info = check_adw_species_info(adw_species_info)
-    all_mammals = update(all_mammals, eol_mammal_trait)
+    print(adw_species_info)
+    # all_mammals = update(all_mammals, eol_mammal_trait)
     # print(all_mammals)
 
 
