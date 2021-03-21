@@ -4,3 +4,4 @@ backend/KGConstruction/*.json
 backend/KGConstruction/.idea/
 backend/KGConstruction/*.ttl
 .idea/
+Final_KG_data/
