@@ -46,8 +46,8 @@ def check_adw_species_info(adw_species_info):
             adw_species_info[key]["Habitat_Regions"] = []
         if "Terrestrial_Biomes" not in adw_species_info[key]:
             adw_species_info[key]["Terrestrial_Biomes"] = []
-        if "Communication_Channel" not in adw_species_info[key]:
-            adw_species_info[key]["Communication_Channel"] = []
+        if "Communication_Channels" not in adw_species_info[key]:
+            adw_species_info[key]["Communication_Channels"] = []
         if "Primary_Diet" not in adw_species_info[key]:
             adw_species_info[key]["Primary_Diet"] = []
         if "Plant_Foods" not in adw_species_info[key]:
@@ -108,7 +108,7 @@ def check_adw_species_info(adw_species_info):
             adw_species_info[key]["Range_length"] = []
         if "Average_lifespan_wild" in adw_species_info[key]:
             s = adw_species_info[key]["Average_lifespan_wild"].replace(",", "").strip()
-            last = s.strip()[-1]
+            last = s.split()[-1]
             if last == "years":
                 l = extract_nums(s, 1)
             elif last == "months":  # TODO: check correct
@@ -128,7 +128,7 @@ def check_adw_species_info(adw_species_info):
             adw_species_info[key]["Average_lifespan_wild"] = 0
         if "Average_lifespan_captivity" in adw_species_info[key]:
             s = adw_species_info[key]["Average_lifespan_captivity"].replace(",", "").strip()
-            last = s.strip()[-1]
+            last = s.split()[-1]
             if last == "years":
                 l = extract_nums(s, 1)
             elif last == "months":
@@ -177,7 +177,7 @@ def update(all_mammals, eol_mammal_trait, adw_species_info, subspecies_location_
             all_mammals[key].update(adw_species_info[key])
         else:
             # print(key + " not exist in adw")
-            all_mammals[key].update({"Habitat_Regions": [], "Terrestrial_Biomes": [], "Communication_Channel": [],
+            all_mammals[key].update({"Habitat_Regions": [], "Terrestrial_Biomes": [], "Communication_Channels": [],
                                      "Primary_Diet": [], "Plant_Foods": [], "Animal_Foods": [], "Key_Behaviors": [],
                                      "Wetlands": [], "Range_mass": [], "Range_length": [], "Average_lifespan_wild":
                                          0, "Average_lifespan_captivity": 0})

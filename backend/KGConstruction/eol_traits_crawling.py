@@ -28,6 +28,7 @@ def store_json(id_links, eol_mammal_traits):
             print(id + " crawled")
         else:
             print(id + " not crawled")
+
     outfile = open(eol_mammal_traits, "w")
     json.dump(out_dict, outfile)
     outfile.close()
@@ -120,7 +121,10 @@ def parse_traits(eol_id):
                         elif my_trait == "ecoregion":
                             collection["eol_ecoregion"].append(trait_val)
                         elif my_trait == "geographic distribution includes":
-                            collection["eol_geographic_distribution"].append(trait_val)
+                            if trait_val:
+                                collection["eol_geographic_distribution"].append(trait_val)
+                            else:
+                                print(eol_id + "eol_geographic_distribution bug found")
                         elif my_trait == "geographic range (size of area)":
                             collection["eol_geographic_range"] = trait_val
                         elif my_trait == "habitat":
