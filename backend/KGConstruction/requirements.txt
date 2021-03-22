@@ -11,6 +11,7 @@ cymem==2.0.5
 en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.0.0/en_core_web_lg-3.0.0-py3-none-any.whl
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0-py3-none-any.whl
 idna==2.10
+isodate==0.6.0
 Jinja2==2.11.3
 lxml==4.6.2
 MarkupSafe==1.1.1
@@ -22,8 +23,10 @@ preshed==3.0.5
 pycparser==2.20
 pydantic==1.7.3
 pyparsing==2.4.7
+rdflib==5.0.0
 requests==2.25.1
 selenium==3.141.0
+six==1.15.0
 smart-open==3.0.0
 soupsieve==2.2
 spacy==3.0.5
