@@ -117,9 +117,27 @@ def update():
         json.dump(non_mammal_dict, f_out2)
 
 
+def update_error_entry():
+    with open('kg_mammals.json', 'r') as f_in1, open('species_class.json', 'r') as f_in2:
+        old = json.load(f_in1)
+        new = json.load(f_in2)
+        for key, info_dict in old.items():
+            new[key]['eol_geographic_distribution'] = info_dict['eol_geographic_distribution']
+    with open('species_class.json', 'w') as f_out:
+        json.dump(new, f_out)
+
+    with open('ecoregion_class_new.json', 'r') as f_in:
+        dd = json.load(f_in)
+        for key, info_dict in dd.items():
+            area = info_dict.get('Area', None)
+            if not area:
+                info_dict['Area'] = ""
+            else:
+                info_dict['Area'] = area.replace('\u00A0', '')
+
+    with open('ecoregion_class_new.json', 'w') as f_out:
+        json.dump(dd, f_out)
+
+
 if __name__ == '__main__':
     pass
-    # with open('species_class.json', 'r') as f_in:
-    #     dd = json.load(f_in)
-    #     for key, info_dict in dd.item():
-    #         info_dict['']

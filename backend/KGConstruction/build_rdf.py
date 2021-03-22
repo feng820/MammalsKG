@@ -26,9 +26,9 @@ def construct_triples():
                 my_kg.add((uri, MAMMAL.subspecies, MAMMAL[subspecies_id]))
 
             # eol
-            my_kg.add((uri, MAMMAL.eol_mass, Literal(info_dict['eol_mass'])))
-            my_kg.add((uri, MAMMAL.eol_length, Literal(info_dict['eol_length'])))
-            my_kg.add((uri, MAMMAL.eol_life_span, Literal(info_dict['eol_life_span'])))
+            my_kg.add((uri, MAMMAL.eol_mass, Literal(info_dict['eol_mass'], datatype=XSD.double)))
+            my_kg.add((uri, MAMMAL.eol_length, Literal(info_dict['eol_length'], datatype=XSD.double)))
+            my_kg.add((uri, MAMMAL.eol_life_span, Literal(info_dict['eol_life_span'], datatype=XSD.double)))
             my_kg.add((uri, MAMMAL.eol_geographic_distribution, Literal(info_dict['eol_geographic_distribution'])))
             my_kg.add((uri, MAMMAL.img, Literal(info_dict['img'])))
             for predator_id in info_dict['predator']:
@@ -57,6 +57,9 @@ def construct_triples():
             if len(info_dict['competitor']) == 0:
                 my_kg.add((uri, NON_MAMMAL.predator, Literal(None)))
                 my_kg.add((uri, MAMMAL.predator, Literal(None)))
+
+            for ecoregion_id in info_dict['ecoregion']:
+                my_kg.add((uri, MAMMAL.ecoregion, ECOREGION[ecoregion_id]))
 
             # adw
             my_kg.add((uri, MAMMAL.Habitat_Regions, Literal(info_dict['Habitat_Regions'])))
@@ -108,13 +111,13 @@ def construct_triples():
 
             for mammals_id in info_dict['mammals']:
                 if 'Q' in mammals_id:
-                    my_kg.add((uri, MAMMAL.fauna_mammal, NON_MAMMAL[mammals_id]))
+                    my_kg.add((uri, MAMMAL.fauna_mammal, MAMMAL[mammals_id]))
             if len(info_dict['mammals']) == 0:
                 my_kg.add((uri, MAMMAL.fauna_mammal, Literal(None)))
 
             for mammals_subs_id in info_dict['mammals_subs']:
                 if 'Q' in mammals_subs_id:
-                    my_kg.add((uri, MAMMAL.fauna_mammal_subs, NON_MAMMAL[mammals_subs_id]))
+                    my_kg.add((uri, MAMMAL.fauna_mammal_subs, MAMMAL[mammals_subs_id]))
             if len(info_dict['mammals_subs']) == 0:
                 my_kg.add((uri, MAMMAL.fauna_mammal_subs, Literal(None)))
 
