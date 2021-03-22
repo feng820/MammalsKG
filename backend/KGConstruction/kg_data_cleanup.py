@@ -1,4 +1,5 @@
 import json
+import uuid
 
 
 def get_combined_data():
@@ -62,7 +63,7 @@ def separate_other_animals():
         __separate_other_animals('prey', info_dict, inverse_dict, non_mammal_dict)
         __separate_other_animals('competitor', info_dict, inverse_dict, non_mammal_dict)
 
-    with open('non_species_class.json', 'w') as f_out1, open('kg_mammals.json', 'w') as f_out2:
+    with open('non_mammal_class.json', 'w') as f_out1, open('kg_mammals.json', 'w') as f_out2:
         json.dump(non_mammal_dict, f_out1)
         json.dump(combined_dict, f_out2)
 
@@ -81,5 +82,44 @@ def separate_ecoregion():
         json.dump(combined_dict, f_out)
 
 
+def _update(attr_name, non_mammal_id, non_mammal_dict, ecoregion_dict):
+    for key, info_dict in ecoregion_dict.items():
+        attrs = info_dict[attr_name]
+        attr_ids = []
+        for attr in attrs:
+            if not attr['taxonName']:
+                continue
+            while True:
+                random_id = "NM" + str(uuid.uuid4().int)[:10]
+                if random_id not in non_mammal_id:
+                    break
+            non_mammal_id.add(random_id)
+            attr_ids.append(random_id)
+            non_mammal_dict[random_id] = {
+                'name': attr['name'],
+                'taxonName': attr['taxonName'],
+                'icon': None
+            }
+        info_dict[attr_name] = attr_ids
+
+
+def update():
+    with open('non_mammal_class.json', 'r') as f_in1, open('ecoregion_class.json', 'r') as f_in2:
+        non_mammal_dict = json.load(f_in1)
+        ecoregion_dict = json.load(f_in2)
+
+    non_mammal_id = set(non_mammal_dict.keys())
+    _update("flora", non_mammal_id, non_mammal_dict, ecoregion_dict)
+    _update("fauna", non_mammal_id, non_mammal_dict, ecoregion_dict)
+
+    with open('ecoregion_class_new.json', 'w') as f_out1, open('non_mammal_class.json', 'w') as f_out2:
+        json.dump(ecoregion_dict, f_out1)
+        json.dump(non_mammal_dict, f_out2)
+
+
 if __name__ == '__main__':
     pass
+    # with open('species_class.json', 'r') as f_in:
+    #     dd = json.load(f_in)
+    #     for key, info_dict in dd.item():
+    #         info_dict['']
