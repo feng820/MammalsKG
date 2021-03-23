@@ -5,3 +5,4 @@ backend/KGConstruction/.idea/
 backend/KGConstruction/*.ttl
 .idea/
 Final_KG_data/
+backend/flask_endpoint/venv
