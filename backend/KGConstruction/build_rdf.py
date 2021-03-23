@@ -19,6 +19,7 @@ def construct_triples():
         for key, info_dict in species_dict.items():
             uri = MAMMAL.__getitem__(key)
             my_kg.add((uri, RDF.type, MAMMAL['species']))
+            my_kg.add((uri, MAMMAL.name, Literal(info_dict['name'])))
             my_kg.add((uri, MAMMAL.taxonName, Literal(info_dict['taxonName'])))
             my_kg.add((uri, MAMMAL.status, Literal(info_dict['status'])))
             my_kg.add((uri, MAMMAL.commonNames, Literal(info_dict['commonNames'])))
