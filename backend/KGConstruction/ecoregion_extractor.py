@@ -40,7 +40,6 @@ def crawl_wikipedia():
     with open('ecoregion_list.json', 'r') as f_in, open('ecoregion_info.json', 'w') as f_out:
         ecoregion_dict = json.load(f_in)
         ecoregion_info_dict = dict()
-        print(len(ecoregion_dict))
         for ecoregion_id, value_dict in ecoregion_dict.items():
             ecoregion_name = value_dict['name']
             ecoregion_coordinates = value_dict.get('coordinates')
@@ -51,19 +50,25 @@ def crawl_wikipedia():
             except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError) as e:
                 print(e)
             if url:
-                print(ecoregion_name, url)
                 resp = requests.get(url)
                 soup_obj = BeautifulSoup(resp.content, 'html.parser')
 
                 info_box = soup_obj.select('#mw-content-text > div.mw-parser-output > table.infobox > tbody > tr')
                 if len(info_box) > 0:
+                    print(ecoregion_name, url, ecoregion_id)
                     value_dict['url'] = url
-                    # summary = page.summary if page.summary else None
-                    # if summary:
-                    #     value_dict['summary'] = summary
-                    image = page.images[0] if len(page.images) > 0 else None
-                    if image:
-                        value_dict['image'] = image
+                    value_dict['image'] = None
+                    if len(info_box) >= 2:
+                        image_location = info_box[1].select('td > a')
+                        if len(image_location) > 0:
+                            base_url = "https://en.wikipedia.org/"
+                            image_location_url = base_url + image_location[0]['href']
+                            image_location_resp = requests.get(image_location_url)
+                            image_soup_obj = BeautifulSoup(image_location_resp.content, 'html.parser')
+                            image_a = image_soup_obj.select('#file > a')
+                            if len(image_a) > 0:
+                                value_dict['image'] = "https:" + image_a[0]['href']
+
                     for info in info_box:
                         attribute = info.find('th')
                         content = info.find('td')
