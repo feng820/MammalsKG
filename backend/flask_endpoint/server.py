@@ -78,7 +78,7 @@ def start_server():
 
         return jsonify(result)
 
-    @application.route('/detail/<mammal_id>')
+    @application.route('/mammal/<mammal_id>')
     def get_mammal_detail(mammal_id):
         neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
 
@@ -119,6 +119,23 @@ def start_server():
         return jsonify({**mammal_info[0], **non_mammal_info[0], **ecoregion_info[0]}) \
             if len(mammal_info) > 0 and len(non_mammal_info) > 0 and len(ecoregion_info) > 0 \
             else jsonify({'error': 'Invalid id'})
+
+    @application.route('/ecoregion/<ecoregion_id>')
+    def get_ecoregion_detail(ecoregion_id):
+        neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
+        ecoregion_info = neo4j_connection.execute('''
+            OPTIONAL MATCH (n:ecoregion__ecoregion)-[:non_mammal__flora]->(flora)
+            WHERE ID(n) = ''' + ecoregion_id + ''' 
+            WITH n, COLLECT(flora) as floras
+            OPTIONAL MATCH (n)-[:mammal__fauna_mammal]->(fauna_mammal)
+            WITH n, floras, COLLECT([ID(fauna_mammal), fauna_mammal.mammal__name]) as fauna_mammals
+            OPTIONAL MATCH (n)-[:non_mammal__fauna]->(fauna_non_mammal)
+            WITH n, floras, fauna_mammals, COLLECT(fauna_non_mammal) as fauna_non_mammals
+            OPTIONAL MATCH (n)-[:mammal__fauna_mammal_subs]->(fauna_mammal_sub)
+            RETURN n, floras, fauna_mammals, fauna_non_mammals, COLLECT(fauna_mammal_sub) as fauna_mammal_subs
+        ''')
+        neo4j_connection.close()
+        return jsonify(ecoregion_info[0]) if len(ecoregion_info) > 0 else jsonify({'error': 'Invalid id'})
 
     application.run()
 
