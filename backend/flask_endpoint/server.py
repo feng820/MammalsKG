@@ -80,7 +80,45 @@ def start_server():
 
     @application.route('/detail/<mammal_id>')
     def get_mammal_detail(mammal_id):
-        pass
+        neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
+
+        # mammal info + all mammal prey, predator and competitors
+        # TODO: SYNC eol_ecoregion mammal and wikipedia mammal
+        mammal_info = neo4j_connection.execute('''
+            MATCH (n:mammal__species)-[:mammal__subspecies]->(subs)
+            WHERE ID(n) = ''' + mammal_id + ''' 
+            WITH n, COLLECT(subs) as subspecies
+            OPTIONAL MATCH (n)-[:mammal__prey]->(prey)
+            WITH n, subspecies, COLLECT([id(prey), prey.mammal__name, prey.mammal__taxonName]) as preys
+            OPTIONAL MATCH (n)-[:mammal__predator]->(pred)
+            WITH n, subspecies, preys, COLLECT([id(pred), pred.mammal__name, pred.mammal__taxonName]) as predators
+            OPTIONAL MATCH (n)-[:mammal__competitor]->(comp)
+            RETURN n, subspecies, preys, predators, 
+                COLLECT([id(comp), comp.mammal__name, comp.mammal__taxonName]) as competitors
+        ''')
+
+        # non-mammal prey, predator and competitors
+        non_mammal_info = neo4j_connection.execute('''
+            MATCH (n:mammal__species)-[:non_mammal__prey]->(prey)
+            WHERE ID(n) = ''' + mammal_id + ''' 
+            WITH n, COLLECT(prey) as nm_preys
+            OPTIONAL MATCH (n)-[:non_mammal__predator]->(pred)
+            WITH n, nm_preys, COLLECT(pred) as nm_predators
+            OPTIONAL MATCH (n)-[:non_mammal__competitor]->(comp)
+            RETURN nm_preys, nm_predators, COLLECT(comp) as nm_competitors
+        ''')
+
+        # ecoregion id and name
+        ecoregion_info = neo4j_connection.execute('''
+            MATCH (n:mammal__species)-[:mammal__ecoregion]->(ecoregion)
+            WHERE ID(n) = ''' + mammal_id + ''' 
+            RETURN COLLECT([ID(ecoregion), ecoregion.ecoregion__name]) as ecoregions
+        ''')
+
+        neo4j_connection.close()
+        return jsonify({**mammal_info[0], **non_mammal_info[0], **ecoregion_info[0]}) \
+            if len(mammal_info) > 0 and len(non_mammal_info) > 0 and len(ecoregion_info) > 0 \
+            else jsonify({'error': 'Invalid id'})
 
     application.run()
 
