@@ -17,6 +17,7 @@ def start_server():
                     status_list = {
                         least concern
                         vulnerable
+                        endangered species
                         critically endangered
                         extinct species
                         near threatened
