@@ -1,0 +1,14 @@
+.nav-header {
+    background-color: #3a7bc5;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    color: white;
+    box-shadow: -1px 0 5px 0 #3a7bc5;
+}
+
+
+.nav-logo {
+    height: 35px;
+    margin-left: 40px;
+}
