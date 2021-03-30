@@ -3,12 +3,14 @@ from utils import constants
 import json
 from json.decoder import JSONDecodeError
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 
 def start_server():
-    application = Flask(__name__)
+    app = Flask(__name__)
+    CORS(app)
 
-    @application.route('/search')
+    @app.route('/search')
     def search_mammal():
         """
             request parameters:
@@ -79,7 +81,7 @@ def start_server():
 
         return jsonify(result)
 
-    @application.route('/mammal/<mammal_id>')
+    @app.route('/mammal/<mammal_id>')
     def get_mammal_detail(mammal_id):
         neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
 
@@ -121,7 +123,7 @@ def start_server():
             if len(mammal_info) > 0 and len(non_mammal_info) > 0 and len(ecoregion_info) > 0 \
             else jsonify({'error': 'Invalid id'})
 
-    @application.route('/ecoregion/<ecoregion_id>')
+    @app.route('/ecoregion/<ecoregion_id>')
     def get_ecoregion_detail(ecoregion_id):
         neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
         ecoregion_info = neo4j_connection.execute('''
@@ -138,7 +140,7 @@ def start_server():
         neo4j_connection.close()
         return jsonify(ecoregion_info[0]) if len(ecoregion_info) > 0 else jsonify({'error': 'Invalid id'})
 
-    return application
+    return app
 
 
 application = start_server()
