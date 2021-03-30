@@ -1,0 +1,25 @@
+.search-bar {
+    width: 400px;
+    display: flex;
+}
+
+.search-result {
+    display: flex;
+    width: 950px;
+    margin: auto;
+    margin-top: 40px;
+}
+
+.search-alert {
+    width: 600px;
+    margin: auto;
+    margin-top: 40px;
+}
+
+.name {
+    cursor: default;
+}
+
+.ant-btn {
+    margin-right: 30px;
+  }
