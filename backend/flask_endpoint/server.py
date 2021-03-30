@@ -53,24 +53,24 @@ def start_server():
         if mass_range:
             try:
                 mass_range = json.loads(mass_range)
-                query += ' AND n.mammal__eol_mass > ' + str(mass_range[0]) + \
-                         ' AND n.mammal__eol_mass < ' + str(mass_range[1])
+                query += ' AND n.mammal__eol_mass >= ' + str(mass_range[0]) + \
+                         ' AND n.mammal__eol_mass <= ' + str(mass_range[1])
             except JSONDecodeError as e:
                 print(e)
 
         if length_range:
             try:
                 length_range = json.loads(length_range)
-                query += ' AND n.mammal__eol_length > ' + str(length_range[0]) + \
-                         ' AND n.mammal__eol_length < ' + str(length_range[1])
+                query += ' AND n.mammal__eol_length >= ' + str(length_range[0]) + \
+                         ' AND n.mammal__eol_length <= ' + str(length_range[1])
             except JSONDecodeError as e:
                 print(e)
 
         if lifespan_range:
             try:
                 lifespan_range = json.loads(lifespan_range)
-                query += ' AND n.mammal__eol_life_span > ' + str(lifespan_range[0]) + \
-                         ' AND n.mammal__eol_life_span < ' + str(lifespan_range[1])
+                query += ' AND n.mammal__eol_life_span >= ' + str(lifespan_range[0]) + \
+                         ' AND n.mammal__eol_life_span <= ' + str(lifespan_range[1])
             except JSONDecodeError as e:
                 print(e)
 
