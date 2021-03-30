@@ -138,8 +138,7 @@ def start_server():
         neo4j_connection.close()
         return jsonify(ecoregion_info[0]) if len(ecoregion_info) > 0 else jsonify({'error': 'Invalid id'})
 
-    application.run()
+    return application
 
 
-if __name__ == '__main__':
-    start_server()
+application = start_server()
