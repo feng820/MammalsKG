@@ -206,20 +206,6 @@ export class SearchBar extends Component {
                     </Form.Item>
 
                 </Form>
-                {/* <Search 
-                    className="search-bar"
-                    placeholder="input mammal keyword" 
-                    onSearch={this.onSearch.bind(this)}
-                    enterButton />
-                
-                <Select defaultValue="lucy" style={{ width: 120 }} onChange={this.onStatusSelect.bind(this)}>
-                        <Select.Option value="jack">Jack</Select.Option>
-                        <Select.Option value="lucy">Lucy</Select.Option>
-                        <Select.Option value="disabled" disabled>
-                            Disabled
-                        </Select.Option>
-                        <Select.Option value="Yiminghe">yiminghe</Select.Option>
-                </Select> */}
 
                 {this.state.showResult && 
                     (this.state.dataSource.length > 0 ?
