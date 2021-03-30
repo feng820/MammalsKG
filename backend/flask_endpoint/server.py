@@ -4,6 +4,7 @@ import json
 from json.decoder import JSONDecodeError
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import ast
 
 
 def start_server():
@@ -79,16 +80,24 @@ def start_server():
         result = neo4j_connection.execute(query)
         neo4j_connection.close()
 
-        return jsonify(result)
+        ret_arr = []
+        for info_dict in result:
+            ret_arr.append({
+                'name': info_dict.get('n.mammal__name'),
+                'commonNames': ast.literal_eval(info_dict.get('n.mammal__commonNames')),
+                'id': info_dict.get('ID(n)')
+            })
+
+        return jsonify(ret_arr)
 
     @app.route('/mammal/<mammal_id>')
     def get_mammal_detail(mammal_id):
         neo4j_connection = Neo4jConnection(constants.DB_URI, constants.DB_USER, constants.DB_PASSWORD)
 
-        # mammal info + all mammal prey, predator and competitors
+        # mammal info: all mammal prey, predator and competitors
         # TODO: SYNC eol_ecoregion mammal and wikipedia mammal
         mammal_info = neo4j_connection.execute('''
-            MATCH (n:mammal__species)-[:mammal__subspecies]->(subs)
+            OPTIONAL MATCH (n:mammal__species)-[:mammal__subspecies]->(subs)
             WHERE ID(n) = ''' + mammal_id + ''' 
             WITH n, COLLECT(subs) as subspecies
             OPTIONAL MATCH (n)-[:mammal__prey]->(prey)
@@ -119,9 +128,30 @@ def start_server():
         ''')
 
         neo4j_connection.close()
-        return jsonify({**mammal_info[0], **non_mammal_info[0], **ecoregion_info[0]}) \
-            if len(mammal_info) > 0 and len(non_mammal_info) > 0 and len(ecoregion_info) > 0 \
-            else jsonify({'error': 'Invalid id'})
+
+        if len(mammal_info) == 0 or len(non_mammal_info) == 0 or len(ecoregion_info) == 0:
+            return jsonify({'error': 'Invalid id'})
+
+        mammal_info = mammal_info[0]
+        mammal_info['n']['mammal__Animal_Foods'] = ast.literal_eval(mammal_info['n']['mammal__Animal_Foods'])
+        mammal_info['n']['mammal__Key_Behaviors'] = ast.literal_eval(mammal_info['n']['mammal__Key_Behaviors'])
+        mammal_info['n']['mammal__Communication_Channels'] = ast.literal_eval(
+            mammal_info['n']['mammal__Communication_Channels'])
+        mammal_info['n']['mammal__Habitat_Regions'] = ast.literal_eval(mammal_info['n']['mammal__Habitat_Regions'])
+        mammal_info['n']['mammal__Plant_Foods'] = ast.literal_eval(mammal_info['n']['mammal__Plant_Foods'])
+        mammal_info['n']['mammal__Range_length'] = ast.literal_eval(mammal_info['n']['mammal__Range_length'])
+        mammal_info['n']['mammal__Range_mass'] = ast.literal_eval(mammal_info['n']['mammal__Range_mass'])
+        mammal_info['n']['mammal__Terrestrial_Biomes'] = ast.literal_eval(
+            mammal_info['n']['mammal__Terrestrial_Biomes'])
+        mammal_info['n']['mammal__commonNames'] = ast.literal_eval(mammal_info['n']['mammal__commonNames'])
+        mammal_info['n']['mammal__Wetlands'] = ast.literal_eval(mammal_info['n']['mammal__Wetlands'])
+        mammal_info['n']['mammal__eol_geographic_distribution'] = ast.literal_eval(
+            mammal_info['n']['mammal__eol_geographic_distribution'])
+
+        for subs in mammal_info['subspecies']:
+            subs['mammal__location_info'] = ast.literal_eval(subs['mammal__location_info'])
+
+        return jsonify({**mammal_info, **non_mammal_info[0], **ecoregion_info[0]})
 
     @app.route('/ecoregion/<ecoregion_id>')
     def get_ecoregion_detail(ecoregion_id):
