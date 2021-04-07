@@ -97,8 +97,10 @@ def start_server():
         # mammal info: all mammal prey, predator and competitors
         # TODO: SYNC eol_ecoregion mammal and wikipedia mammal
         mammal_info = neo4j_connection.execute('''
-            OPTIONAL MATCH (n:mammal__species)-[:mammal__subspecies]->(subs)
-            WHERE ID(n) = ''' + mammal_id + ''' 
+            MATCH (n:mammal__species)
+            WHERE ID(n) = ''' + mammal_id + '''
+            WITH n
+            OPTIONAL MATCH (n)-[:mammal__subspecies]->(subs)
             WITH n, COLLECT(subs) as subspecies
             OPTIONAL MATCH (n)-[:mammal__prey]->(prey)
             WITH n, subspecies, COLLECT([id(prey), prey.mammal__name, prey.mammal__taxonName]) as preys
@@ -128,9 +130,10 @@ def start_server():
         ''')
 
         neo4j_connection.close()
-
-        if len(mammal_info) == 0 or len(non_mammal_info) == 0 or len(ecoregion_info) == 0:
+        if len(mammal_info) == 0:
             return jsonify({'error': 'Invalid id'})
+        non_mammal_info = non_mammal_info[0] if len(non_mammal_info) > 0 else {}
+        ecoregion_info = ecoregion_info[0] if len(ecoregion_info) > 0 else {}
 
         mammal_info = mammal_info[0]
         mammal_info['n']['mammal__Animal_Foods'] = ast.literal_eval(mammal_info['n']['mammal__Animal_Foods'])
@@ -151,7 +154,7 @@ def start_server():
         for subs in mammal_info['subspecies']:
             subs['mammal__location_info'] = ast.literal_eval(subs['mammal__location_info'])
 
-        return jsonify({**mammal_info, **non_mammal_info[0], **ecoregion_info[0]})
+        return jsonify({**mammal_info, **non_mammal_info, **ecoregion_info})
 
     @app.route('/ecoregion/<ecoregion_id>')
     def get_ecoregion_detail(ecoregion_id):
