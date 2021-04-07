@@ -1,0 +1,21 @@
+.img {
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background-position: center;
+    padding: 5px;
+}
+
+.ant-descriptions-item-content {
+    text-align: left;
+}
+
+.ant-card-meta-description {
+    color: black;
+    font-weight: bold;
+}
+
+.mammal-food-chain {
+    font-size: 15px;
+    padding: 8px;
+    margin: 10px 5px 10px 5px;
+}

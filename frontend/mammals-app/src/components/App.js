@@ -7,6 +7,8 @@ import {
 
 import { TopNavBar } from './TopNavBar';
 import { MammalDetail } from './MammalDetail';
+import { Ecoregion } from './Ecoregion';
+import { SubspeciesMap } from './SubspeciesMap';
 
 function App() {
   return (
@@ -14,8 +16,11 @@ function App() {
       <div className="App">
         <TopNavBar /> 
         <Switch>
+            <Route exact path="/mammal/:mammalId" render={(props) => (
+              <MammalDetail key={props.match.params.mammalId} {...props} />)} />
+            <Route path="/mammal/:mammalId/map" component={SubspeciesMap} />
+            <Route path="/ecoregion/:ecoId" component={Ecoregion} />
             <Route exact path="/" component={Main} />
-            <Route path="/mammal/:mammalId" component={MammalDetail} />
         </Switch>
       </div>
     </Router>
