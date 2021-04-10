@@ -1,14 +1,14 @@
-import { Main } from './Main';
 import {
   BrowserRouter as Router,
-  Switch,
-  Route,
-} from "react-router-dom";
 
-import { TopNavBar } from './TopNavBar';
-import { MammalDetail } from './MammalDetail';
+  Route, Switch
+} from "react-router-dom";
 import { Ecoregion } from './Ecoregion';
+import { Main } from './Main';
+import { MammalDetail } from './MammalDetail';
 import { SubspeciesMap } from './SubspeciesMap';
+import { TopNavBar } from './TopNavBar';
+
 
 function App() {
   return (
@@ -17,7 +17,9 @@ function App() {
         <TopNavBar /> 
         <Switch>
             <Route exact path="/mammal/:mammalId" render={(props) => (
-              <MammalDetail key={props.match.params.mammalId} {...props} />)} />
+                <MammalDetail key={props.match.params.mammalId} {...props} />
+              )}
+            />
             <Route path="/mammal/:mammalId/map" component={SubspeciesMap} />
             <Route path="/ecoregion/:ecoId" component={Ecoregion} />
             <Route exact path="/" component={Main} />
