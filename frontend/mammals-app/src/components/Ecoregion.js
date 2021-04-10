@@ -1,14 +1,16 @@
-import { Card, Col, Collapse, Descriptions, Divider, Image, Row } from 'antd';
+import { Card, Col, Collapse, Descriptions, Divider, Image, Row, Table } from 'antd';
 import axios from 'axios';
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
 import ErrorImg from '../assets/No_image_available.svg';
 const { Panel } = Collapse;
 const { Meta } = Card;
+const { Column } = Table;
 
+// TODO: add img
 function Describe(props) {
     var coordinates = [];
-    if (props.ecoInfo.ecoregion__coordinates) {
+    if (props.ecoInfo.ecoregion__coordinates && props.ecoInfo.ecoregion__coordinates !== "None") {
         coordinates = JSON.parse(props.ecoInfo.ecoregion__coordinates.replace(/'/g, '"'));
     }
     return (
@@ -62,6 +64,96 @@ function MyCard(props) {
     )
 }
 
+function arrayToObject(arr) {
+    var obj = {};
+    var ind = ['name', 'time', 'coordinate']
+    for (var i = 0; i < arr.length; ++i) {
+        obj[ind[i]] = arr[i];
+    }
+    return obj;
+}
+
+class FancyCard extends React.Component {
+    constructor(props) {
+        super(props);
+        // console.log(props.item)
+
+        var locations = []
+        const infos = JSON.parse(props.item.mammal__location_info.replace(/'/g, '"'))
+        for (var i = 0; i < infos.length; ++i) {
+            locations.push(arrayToObject(infos[i]))
+        }
+        // console.log(locations)
+
+        const tabList = [
+            {
+                key: 'tab1',
+                tab: 'Info',
+            },
+            {
+                key: 'tab2',
+                tab: 'Location',
+            },
+        ];
+
+        const contentList = {
+            tab1: <div>
+                    <img src={ErrorImg} alt="No img available" width="150" height="200" />
+                    <br />
+                    {props.item.mammal__taxonName}
+                  </div>,
+            // tab2: <p>content2</p>,
+            tab2: 
+            <Table dataSource={locations} size="small" scroll={{y: 230}} pagination={{
+                total: locations.length,
+                pageSize: locations.length,
+                hideOnSinglePage: true
+            }}>
+                <Column title="Name" dataIndex="name" key="name" />
+                <Column title="Time" dataIndex="time" key="time" />
+                <Column title="Coordinate" dataIndex="coordinate" key="coordinate" />
+            </Table>
+        };
+
+        this.state = {
+            tabList: tabList,
+            contentList: contentList,
+            key: 'tab1',
+        }
+    }
+
+    onTabChange = (key, type) => {
+        console.log(key, type);
+        this.setState({ [type]: key });
+    };
+
+    render() {
+        return (
+            <Col span={8}>
+                <Card
+                    style={{ width: '100%', height: 400 }}
+                    title={this.props.item.mammal__name}
+                    extra={<a href="#">More</a>}
+                    // cover={<Image
+                    //     className="img"
+                    //     src={this.props.item.uri}
+                    //     height={180}
+                    //     width={180}
+                    //     fallback={ErrorImg}
+                    // />}
+                    tabList={this.state.tabList}
+                    activeTabKey={this.state.key}
+                    onTabChange={key => {
+                        this.onTabChange(key, 'key');
+                    }}
+                >
+                    {this.state.contentList[this.state.key]}
+                </Card>
+            </Col>
+        )
+    }
+}
+
 function Accordion(props) {
     const text = `
   A dog is a type of domesticated animal.
@@ -96,7 +188,16 @@ function Accordion(props) {
             {props.faunaMammalSubs.length > 0 &&
                 <Panel header="Fauna mammals subspecies" key="2">
                     {/* <p>{text}</p> */}
-
+                    {/* <FancyCard extends React.></FancyCard extends React.> */}
+                    <div className="site-card-wrapper">
+                        <Row gutter={[16, 16]}>
+                            {props.faunaMammalSubs.map((item) => (
+                                <FancyCard
+                                    item={item}
+                                />
+                            ))}
+                        </Row>
+                    </div>
                 </Panel>
             }
             {props.faunaNonMammals.length > 0 &&
@@ -127,7 +228,6 @@ function Accordion(props) {
                     </div>
                 </Panel>
             }
-
         </Collapse>
     )
 }
