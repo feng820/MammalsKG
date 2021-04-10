@@ -1,18 +1,20 @@
-import { Col, Collapse, Descriptions, Divider, Image, Row } from 'antd';
+import { Card, Col, Collapse, Descriptions, Divider, Image, Row } from 'antd';
 import axios from 'axios';
 import React, { Component } from 'react';
+import { Link } from "react-router-dom";
 import ErrorImg from '../assets/No_image_available.svg';
 const { Panel } = Collapse;
+const { Meta } = Card;
 
 function Describe(props) {
-    // console.log(props.ecoInfo.uri)
+    // console.log(props.faunaMammals)
     return (
         <div>
             <Row style={{ marginTop: 20 }} justify="center">
                 <Col span={6}>
                     <Image
                         className="img"
-                        src={props.ecoInfo.ecoregion__image}
+                        src={props.ecoInfo.ecoregion__image || null}
                         height={300}
                         width={300}
                         fallback={ErrorImg}
@@ -31,8 +33,6 @@ function Describe(props) {
                     </Descriptions>
                 </Col>
             </Row>
-
-
         </div>
     )
 }
@@ -43,17 +43,69 @@ function Accordion(props) {
   Known for its loyalty and faithfulness,
   it can be found as a welcome guest in many households across the world.
     `;
+    // console.log('hello')
+    // if (props.floras.length > 0) {
+    //     console.log(props.floras[0].uri)
+    // }
+
+    const gridStyle = {
+        width: '25%',
+        textAlign: 'center',
+    };
+
     return (
         <Collapse accordion>
-            <Panel header="This is panel header 1" key="1">
-                <p>{text}</p>
-            </Panel>
-            <Panel header="This is panel header 2" key="2">
-                <p>{text}</p>
-            </Panel>
-            <Panel header="This is panel header 3" key="3">
-                <p>{text}</p>
-            </Panel>
+            {props.faunaMammals.length > 0 &&
+                <Panel header="Fauna mammals" key="1">
+                    <Card>
+                        {props.faunaMammals.map((animal, index) => (
+                            <Link to={{
+                                pathname: "/mammal/" + animal[0],
+                            }}>
+                                <Card.Grid style={gridStyle} key={index}>{animal[1]}</Card.Grid>
+                            </Link>
+                        ))}
+                    </Card>
+                </Panel>
+            }
+            {props.faunaMammalSubs.length > 0 &&
+                <Panel header="Fauna mammals subspecies" key="2">
+                    <p>{text}</p>
+                </Panel>
+            }
+            {props.faunaNonMammals.length > 0 &&
+                <Panel header="Fauna non mammals" key="3">
+                    {/* <p>{text}</p> */}
+                    <div className="site-card-wrapper">
+                        <Row gutter={[16, 16]}>
+                            {props.faunaNonMammals.map((item) => (
+                                <Col span={8}>
+                                    <Card 
+                                        hoverable 
+                                        bordered={false}
+                                        cover={<Image
+                                            className="img"
+                                            src={item.non_mammal__icon}
+                                            height={180} 
+                                            width={180}
+                                            fallback={ErrorImg}
+                                        />}
+                                    >
+                                        <Meta title={item.non_mammal__name} description={item.non_mammal__taxonName} />
+                                    </Card>
+                                </Col>
+                            ))}
+
+                        </Row>
+                    </div>
+                </Panel>
+            }
+            {props.floras.length > 0 &&
+                <Panel header="Floras" key="4">
+                    {/* <p>{text}</p> */}
+                </Panel>
+            }
+
         </Collapse>
     )
 }
@@ -65,6 +117,10 @@ export class Ecoregion extends Component {
         this.state = {
             ecoId: props.match.params.ecoId,
             ecoInfo: {},
+            faunaMammals: [],
+            faunaNonMammals: [],
+            faunaMammalSubs: [],
+            floras: [],
         }
         this.fetchData();
     }
@@ -76,8 +132,12 @@ export class Ecoregion extends Component {
             // console.log(eco);
             this.setState({
                 ecoInfo: eco.n,
+                faunaMammals: eco.fauna_mammals,
+                faunaNonMammals: eco.fauna_non_mammals,
+                faunaMammalSubs: eco.fauna_mammal_subs,
+                floras: eco.floras,
             })
-            console.log(this.state.ecoInfo);
+            // console.log(this.state.floras);
         }).catch(err => {
             const errMsg = err.message || 'Unknown error';
             console.error(errMsg);
@@ -91,10 +151,13 @@ export class Ecoregion extends Component {
                 <Describe
                     ecoInfo={this.state.ecoInfo}
                 />
-                <Divider orientation="center" style={{ fontSize: 30 }}> Fauna Information </Divider>
-                <Accordion />
-                <Divider orientation="center" style={{ fontSize: 30 }}> Flora Information </Divider>
-                <Accordion />
+                <Divider orientation="center" style={{ fontSize: 30 }}> Fauna & Flora </Divider>
+                <Accordion
+                    faunaMammals={this.state.faunaMammals}
+                    faunaNonMammals={this.state.faunaNonMammals}
+                    faunaMammalSubs={this.state.faunaMammalSubs}
+                    floras={this.state.floras}
+                />
             </div>
         );
     }
