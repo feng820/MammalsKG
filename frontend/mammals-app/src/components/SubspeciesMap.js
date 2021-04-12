@@ -7,7 +7,8 @@ import {
 import axios from 'axios';
 import React, { Component, Fragment, useState } from "react";
 
-function Map() {
+function Map(props) {
+    console.log(props.subspecies)
     // The things we need to track in state
     const [mapRef, setMapRef] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
@@ -152,31 +153,23 @@ function Map() {
 export class SubspeciesMap extends Component {
     constructor(props) {
         super();
-        console.log(props.match.params.mammalId);
+        // console.log(props.match.params.mammalId);
         this.state = {
             mammalId: props.match.params.mammalId,
-            ecoInfo: {},
-            faunaMammals: [],
-            faunaNonMammals: [],
-            faunaMammalSubs: [],
-            floras: [],
+            subspecies: [],
         }
         this.fetchData();
     }
 
     fetchData = () => {
-        const url = "http://127.0.0.1:5000/ecoregion/" + this.state.mammalId;
+        const url = "http://127.0.0.1:5000/mammal/" + this.state.mammalId;
         axios.get(url).then(res => {
-            const eco = res.data;
-            // console.log(eco);
+            const mammal = res.data;
+            // console.log(mammal);
             this.setState({
-                ecoInfo: eco.n,
-                faunaMammals: eco.fauna_mammals,
-                faunaNonMammals: eco.fauna_non_mammals,
-                faunaMammalSubs: eco.fauna_mammal_subs,
-                floras: eco.floras,
+                subspecies: mammal.subspecies,
             })
-            // console.log(this.state.floras);
+            // console.log(this.state.subspecies);
         }).catch(err => {
             const errMsg = err.message || 'Unknown error';
             console.error(errMsg);
@@ -185,7 +178,9 @@ export class SubspeciesMap extends Component {
 
     render() {
         return (
-            <Map></Map>
+            <Map
+                subspecies={this.state.subspecies}
+            />
         )
     }
 }
