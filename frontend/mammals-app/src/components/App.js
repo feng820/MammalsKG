@@ -6,8 +6,7 @@ import {
 import { Ecoregion } from './Ecoregion';
 import { Main } from './Main';
 import { MammalDetail } from './MammalDetail';
-// import { SubspeciesMap } from './SubspeciesMap';
-import SubspeciesMap from './SubspeciesMap';
+import { SubspeciesMap } from './SubspeciesMap';
 import { TopNavBar } from './TopNavBar';
 
 

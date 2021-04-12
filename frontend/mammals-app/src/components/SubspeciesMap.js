@@ -4,9 +4,10 @@ import {
     GoogleMap,
     InfoWindow, Marker, useLoadScript
 } from "@react-google-maps/api";
-import React, { Fragment, useState } from "react";
+import axios from 'axios';
+import React, { Component, Fragment, useState } from "react";
 
-function SubspeciesMap() {
+function Map() {
     // The things we need to track in state
     const [mapRef, setMapRef] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
@@ -105,7 +106,7 @@ function SubspeciesMap() {
                 icon={{
                 //   path:
                 //     "M12.75 0l-2.25 2.25 2.25 2.25-5.25 6h-5.25l4.125 4.125-6.375 8.452v0.923h0.923l8.452-6.375 4.125 4.125v-5.25l6-5.25 2.25 2.25 2.25-2.25-11.25-11.25zM10.5 12.75l-1.5-1.5 5.25-5.25 1.5 1.5-5.25 5.25z",
-                  url: `http://maps.google.com/mapfiles/ms/icons/${colorList[index]}.png`,
+                  url: `http://maps.google.com/mapfiles/ms/icons/${colorList[index % colorList.length]}.png`,
                 //   fillColor: `${colorList[index]}`,
                   fillOpacity: 1.0,
                   strokeWeight: 0,
@@ -148,4 +149,47 @@ function SubspeciesMap() {
     return isLoaded ? renderMap() : null;
   }
 
-export default SubspeciesMap;
+export class SubspeciesMap extends Component {
+    constructor(props) {
+        super();
+        console.log(props.match.params.mammalId);
+        this.state = {
+            mammalId: props.match.params.mammalId,
+            ecoInfo: {},
+            faunaMammals: [],
+            faunaNonMammals: [],
+            faunaMammalSubs: [],
+            floras: [],
+        }
+        this.fetchData();
+    }
+
+    fetchData = () => {
+        const url = "http://127.0.0.1:5000/ecoregion/" + this.state.mammalId;
+        axios.get(url).then(res => {
+            const eco = res.data;
+            // console.log(eco);
+            this.setState({
+                ecoInfo: eco.n,
+                faunaMammals: eco.fauna_mammals,
+                faunaNonMammals: eco.fauna_non_mammals,
+                faunaMammalSubs: eco.fauna_mammal_subs,
+                floras: eco.floras,
+            })
+            // console.log(this.state.floras);
+        }).catch(err => {
+            const errMsg = err.message || 'Unknown error';
+            console.error(errMsg);
+        });
+    }
+
+    render() {
+        return (
+            <Map></Map>
+        )
+    }
+}
+
+
+
+// export default SubspeciesMap;
