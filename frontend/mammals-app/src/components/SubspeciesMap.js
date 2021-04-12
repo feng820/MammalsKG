@@ -1,8 +1,11 @@
 // We will use these things from the lib
 // https://react-google-maps-api-docs.netlify.com/
-import { useLoadScript } from "@react-google-maps/api";
+import {
+    GoogleMap,
+    InfoWindow, Marker, useLoadScript
+} from "@react-google-maps/api";
 import axios from 'axios';
-import React, { Component, useState } from "react";
+import React, { Component, Fragment, useState } from "react";
 
 function Map(props) {
     // console.log(props.subspecies)
@@ -33,6 +36,7 @@ function Map(props) {
     const myPlaces = []
     const noPlaces = []
     var i = 0
+    var type = 0
     myMammals.map((mammal) => {
         // console.log(mammal)
         mammal.mammal__location_info.map(place => {
@@ -48,139 +52,144 @@ function Map(props) {
                 if (arr[1].slice(-1) === 'W') {
                     lng *= -1;
                 }
-                return {lat: lat, lng: lng}
+                return { lat: lat, lng: lng }
             }
             // console.log(coords(place))
-            myPlaces.push({id: i++, pos: coords(place), place: place[0], time: place[1], name: mammal.mammal__name,
-                 taxonName: mammal.mammal__taxonName, wikiUrl: mammal.mammal__wiki_uri,
-                uri: mammal.uri})
+            myPlaces.push({
+                id: i++, pos: coords(place), place: place[0], time: place[1], name: mammal.mammal__name,
+                taxonName: mammal.mammal__taxonName, wikiUrl: mammal.mammal__wiki_uri,
+                uri: mammal.uri, type: type
+            })
         })
+        type++;
+        
         if (mammal.mammal__location_info.length === 0) {
-            noPlaces.push({name: mammal.mammal__name, taxonName: mammal.mammal__taxonName,
-                 wikiUrl: mammal.mammal__wiki_uri})
+            noPlaces.push({
+                name: mammal.mammal__name, taxonName: mammal.mammal__taxonName,
+                wikiUrl: mammal.mammal__wiki_uri
+            })
         }
     })
     // console.log(myPlaces)
     // console.log(noPlaces)
+    // return 'hello';
 
-    return 'hello';
+    // Iterate myPlaces to size, center, and zoom map to contain all markers
+    const fitBounds = (map) => {
+        const bounds = new window.google.maps.LatLngBounds();
+        myPlaces.map((place) => {
+            bounds.extend(place.pos);
+            return place.id;
+        });
+        map.fitBounds(bounds);
+    };
 
-    // // Iterate myPlaces to size, center, and zoom map to contain all markers
-    // const fitBounds = (map) => {
-    //   const bounds = new window.google.maps.LatLngBounds();
-    //   myPlaces.map((place) => {
-    //     bounds.extend(place.pos);
-    //     return place.id;
-    //   });
-    //   map.fitBounds(bounds);
-    // };
+    const loadHandler = (map) => {
+        // Store a reference to the google map instance in state
+        setMapRef(map);
+        // Fit map bounds to contain all markers
+        fitBounds(map);
+    };
 
-    // const loadHandler = (map) => {
-    //   // Store a reference to the google map instance in state
-    //   setMapRef(map);
-    //   // Fit map bounds to contain all markers
-    //   fitBounds(map);
-    // };
+    // We have to create a mapping of our places to actual Marker objects
+    const markerLoadHandler = (marker, place) => {
+        return setMarkerMap((prevState) => {
+            return { ...prevState, [place.id]: marker };
+        });
+    };
 
-    // // We have to create a mapping of our places to actual Marker objects
-    // const markerLoadHandler = (marker, place) => {
-    //   return setMarkerMap((prevState) => {
-    //     return { ...prevState, [place.id]: marker };
-    //   });
-    // };
+    const markerClickHandler = (event, place) => {
+        // Remember which place was clicked
+        setSelectedPlace(place);
 
-    // const markerClickHandler = (event, place) => {
-    //   // Remember which place was clicked
-    //   setSelectedPlace(place);
+        // Required so clicking a 2nd marker works as expected
+        if (infoOpen) {
+            setInfoOpen(false);
+        }
 
-    //   // Required so clicking a 2nd marker works as expected
-    //   if (infoOpen) {
-    //     setInfoOpen(false);
-    //   }
+        setInfoOpen(true);
 
-    //   setInfoOpen(true);
+        // If you want to zoom in a little on marker click
+        //   if (zoom < 10) {
+        //     setZoom(10);
+        //   }
 
-    //   // If you want to zoom in a little on marker click
-    // //   if (zoom < 10) {
-    // //     setZoom(10);
-    // //   }
+        // if you want to center the selected Marker
+        //   setCenter(place.pos)
+    };
 
-    //   // if you want to center the selected Marker
-    // //   setCenter(place.pos)
-    // };
+    const colorList = ['yellow', 'blue', 'green', 'lightblue', 'orange', 'pink', 'purple', 'red'];
 
-    // const colorList = [ 'yellow', 'blue', 'green', 'lightblue', 'orange', 'pink', 'purple', 'red'];
+    const renderMap = () => {
+        return (
+            <Fragment>
+                <GoogleMap
+                    // Do stuff on map initial laod
+                    onLoad={loadHandler}
+                    // Save the current center position in state
+                    onCenterChanged={() => setCenter(mapRef.getCenter().toJSON())}
+                    // Save the user's map click position
+                    onClick={(e) => setClickedLatLng(e.latLng.toJSON())}
+                    center={center}
+                    zoom={zoom}
+                    mapContainerStyle={{
+                        height: "70vh",
+                        width: "100%"
+                    }}
+                >
+                    {myPlaces.map((place) => (
+                        <Marker
+                            key={place.id}
+                            position={place.pos}
+                            onLoad={(marker) => markerLoadHandler(marker, place)}
+                            onMouseOver={(event) => markerClickHandler(event, place)}
+                            // onClick={() => setZoom(8)}
+                            onMouseOut={() => setInfoOpen(false)}
+                            // Not required, but if you want a custom icon:
+                            icon={{
+                                //   path:
+                                //     "M12.75 0l-2.25 2.25 2.25 2.25-5.25 6h-5.25l4.125 4.125-6.375 8.452v0.923h0.923l8.452-6.375 4.125 4.125v-5.25l6-5.25 2.25 2.25 2.25-2.25-11.25-11.25zM10.5 12.75l-1.5-1.5 5.25-5.25 1.5 1.5-5.25 5.25z",
+                                url: `http://maps.google.com/mapfiles/ms/icons/${colorList[place.type % colorList.length]}.png`,
+                                //   fillColor: `${colorList[index]}`,
+                                fillOpacity: 1.0,
+                                strokeWeight: 0,
+                                scale: 1
+                            }}
+                        />
+                    ))}
 
-    // const renderMap = () => {
-    //   return (
-    //     <Fragment>
-    //       <GoogleMap
-    //         // Do stuff on map initial laod
-    //         onLoad={loadHandler}
-    //         // Save the current center position in state
-    //         onCenterChanged={() => setCenter(mapRef.getCenter().toJSON())}
-    //         // Save the user's map click position
-    //         onClick={(e) => setClickedLatLng(e.latLng.toJSON())}
-    //         center={center}
-    //         zoom={zoom}
-    //         mapContainerStyle={{
-    //           height: "70vh",
-    //           width: "100%"
-    //         }}
-    //       >
-    //         {myPlaces.map((place) => (
-    //           <Marker
-    //             key={place.id}
-    //             position={place.pos}
-    //             onLoad={(marker) => markerLoadHandler(marker, place)}
-    //             onMouseOver={(event) => markerClickHandler(event, place)}
-    //             // onClick={() => setZoom(8)}
-    //             onMouseOut={() => setInfoOpen(false)}
-    //             // Not required, but if you want a custom icon:
-    //             icon={{
-    //             //   path:
-    //             //     "M12.75 0l-2.25 2.25 2.25 2.25-5.25 6h-5.25l4.125 4.125-6.375 8.452v0.923h0.923l8.452-6.375 4.125 4.125v-5.25l6-5.25 2.25 2.25 2.25-2.25-11.25-11.25zM10.5 12.75l-1.5-1.5 5.25-5.25 1.5 1.5-5.25 5.25z",
-    //               url: `http://maps.google.com/mapfiles/ms/icons/${colorList[index % colorList.length]}.png`,
-    //             //   fillColor: `${colorList[index]}`,
-    //               fillOpacity: 1.0,
-    //               strokeWeight: 0,
-    //               scale: 1
-    //             }}
-    //           />
-    //         ))}
+                    {infoOpen && selectedPlace && (
+                        <InfoWindow
+                            anchor={markerMap[selectedPlace.id]}
+                            onCloseClick={() => setInfoOpen(false)}
+                        >
+                            <div>
+                                <h3>{selectedPlace.id}</h3>
+                                <div>This is your info window content</div>
+                            </div>
+                        </InfoWindow>
+                    )}
+                </GoogleMap>
 
-    //         {infoOpen && selectedPlace && (
-    //           <InfoWindow
-    //             anchor={markerMap[selectedPlace.id]}
-    //             onCloseClick={() => setInfoOpen(false)}
-    //           >
-    //             <div>
-    //               <h3>{selectedPlace.id}</h3>
-    //               <div>This is your info window content</div>
-    //             </div>
-    //           </InfoWindow>
-    //         )}
-    //       </GoogleMap>
+                {/* Our center position always in state */}
+                <h3>
+                    Center {center.lat}, {center.lng}
+                </h3>
 
-    //       {/* Our center position always in state */}
-    //       <h3>
-    //         Center {center.lat}, {center.lng}
-    //       </h3>
+                {/* Position of the user's map click */}
+                {clickedLatLng && (
+                    <h3>
+                        You clicked: {clickedLatLng.lat}, {clickedLatLng.lng}
+                    </h3>
+                )}
 
-    //       {/* Position of the user's map click */}
-    //       {clickedLatLng && (
-    //         <h3>
-    //           You clicked: {clickedLatLng.lat}, {clickedLatLng.lng}
-    //         </h3>
-    //       )}
+                {/* Position of the user's map click */}
+                {selectedPlace && <h3>Selected Marker: {selectedPlace.id}</h3>}
+            </Fragment>
+        );
+    };
 
-    //       {/* Position of the user's map click */}
-    //       {selectedPlace && <h3>Selected Marker: {selectedPlace.id}</h3>}
-    //     </Fragment>
-    //   );
-    // };
-
-    // return isLoaded ? renderMap() : null;
+    return isLoaded ? renderMap() : null;
 }
 
 export class SubspeciesMap extends Component {
