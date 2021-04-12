@@ -13,15 +13,17 @@ function Map(props) {
     const [mapRef, setMapRef] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
     const [markerMap, setMarkerMap] = useState({});
-    const [center, setCenter] = useState({ lat: 44.076613, lng: -98.362239833 });
-    const [zoom, setZoom] = useState(5);
+    // const [center, setCenter] = useState({ lat: 44.076613, lng: -98.362239833 });
+    const [center, setCenter] = useState({lat: 0.0, lng: 0.0});
+    const [zoom, setZoom] = useState(30);
     const [clickedLatLng, setClickedLatLng] = useState(null);
     const [infoOpen, setInfoOpen] = useState(false);
 
     // Load the Google maps scripts
     const { isLoaded } = useLoadScript({
         // Enter your own Google Maps API key
-        googleMapsApiKey: "AIzaSyCkj_10LMNcSTaDVK1jfrR8edmabgzJZjU"
+        googleMapsApiKey: "AIzaSyCkj_10LMNcSTaDVK1jfrR8edmabgzJZjU",
+        language: "en"
     });
 
     // The places I want to create markers for.
@@ -58,7 +60,7 @@ function Map(props) {
             myPlaces.push({
                 id: i++, pos: coords(place), place: place[0], time: place[1], name: mammal.mammal__name,
                 taxonName: mammal.mammal__taxonName, wikiUrl: mammal.mammal__wiki_uri,
-                uri: mammal.uri, type: type
+                uri: mammal.uri, type: type, coordinate: place[2]
             })
         })
         type++;
@@ -75,6 +77,7 @@ function Map(props) {
     // return 'hello';
 
     // Iterate myPlaces to size, center, and zoom map to contain all markers
+    // TODO: 为什么有的时候无法初始时显示所有pins？
     const fitBounds = (map) => {
         const bounds = new window.google.maps.LatLngBounds();
         myPlaces.map((place) => {
@@ -164,8 +167,12 @@ function Map(props) {
                             onCloseClick={() => setInfoOpen(false)}
                         >
                             <div>
-                                <h3>{selectedPlace.id}</h3>
-                                <div>This is your info window content</div>
+                                <h3>{selectedPlace.name}</h3>
+                                <div>
+                                    <p>Place found: {selectedPlace.place}</p>
+                                    <p>Found time: {selectedPlace.time}</p>
+                                    <p>Coordinate: {selectedPlace.coordinate}</p>
+                                </div>
                             </div>
                         </InfoWindow>
                     )}
@@ -177,14 +184,22 @@ function Map(props) {
                 </h3>
 
                 {/* Position of the user's map click */}
-                {clickedLatLng && (
+                {/* {clickedLatLng && (
                     <h3>
                         You clicked: {clickedLatLng.lat}, {clickedLatLng.lng}
                     </h3>
-                )}
+                )} */}
 
                 {/* Position of the user's map click */}
-                {selectedPlace && <h3>Selected Marker: {selectedPlace.id}</h3>}
+                {selectedPlace && (
+                    <div>
+                        <h3>Name: {selectedPlace.name}</h3>
+                        <h3>Taxon Name: {selectedPlace.taxonName}</h3>
+                        <h3>WiKi url: 
+                            <a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> {selectedPlace.wikiUrl}</a>
+                        </h3>
+                    </div>
+                )}
             </Fragment>
         );
     };
