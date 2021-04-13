@@ -1,12 +1,17 @@
 // We will use these things from the lib
 // https://react-google-maps-api-docs.netlify.com/
+// doc:
+// https://react-google-maps-api-docs.netlify.app/
+// https://medium.com/@allynak/how-to-use-google-map-api-in-react-app-edb59f64ac9d
+// https://sites.google.com/site/gmapsdevelopment/
 import {
     GoogleMap,
     InfoWindow, Marker, useLoadScript
 } from "@react-google-maps/api";
-import { Col, Row } from 'antd';
+import { Card, Carousel, Col, Divider, Image, Row } from 'antd';
 import axios from 'axios';
 import React, { Component, Fragment, useState } from "react";
+import ErrorImg from '../assets/No_image_available.svg';
 
 function Map(props) {
     // The things we need to track in state
@@ -106,7 +111,15 @@ function Map(props) {
     };
 
     const colorList = ['yellow', 'blue', 'green', 'lightblue', 'orange', 'pink', 'purple', 'red'];
-
+    const contentStyle = {
+        paddingTop: '15px',
+        height: '300px',
+        color: '#fff',
+        size: '20px',
+        lineHeight: '7px',
+        textAlign: 'center',
+        background: '#C0C0C0',
+    };
     const renderMap = () => {
         return (
             <Fragment>
@@ -122,7 +135,7 @@ function Map(props) {
                             center={center}
                             zoom={zoom}
                             mapContainerStyle={{
-                                height: "70vh",
+                                height: "93vh",
                                 width: "100%"
                             }}
                         >
@@ -161,14 +174,63 @@ function Map(props) {
                     </Col>
 
                     <Col span={6}>
+                        {noPlaces.length > 0 && (
+                            <>
+                                <Divider orientation="center" style={{ fontSize: 25 }}> Other Mammals </Divider>
+                                <Carousel autoplay>
+                                    {noPlaces.map((place) => (
+                                        <div>
+                                            <div style={contentStyle}>
+                                                <p>Name: {place.name}</p>
+                                                <p>Taxon name: {place.taxonName}</p>
+                                                {/* TODO: 加入subspecies img */}
+                                                <a href={place.wikiUrl} target="_blank" rel="noreferrer">
+                                                <Image
+                                                    width={150}
+                                                    height={200}
+                                                    src={place.mammal__icon || 'error'}
+                                                    fallback={ErrorImg}
+                                                />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </Carousel>
+                            </>
+                        )}
+
+
                         {selectedPlace && (
-                            <div>
-                                <h3>Name: {selectedPlace.name}</h3>
-                                <h3>Taxon Name: {selectedPlace.taxonName}</h3>
-                                <h3>WiKi url:
-                            <a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> {selectedPlace.wikiUrl}</a>
-                                </h3>
-                            </div>
+                            // <div>
+                            //     <h2>Name: {selectedPlace.name}</h2>
+                            //     <p>Taxon Name: {selectedPlace.taxonName}</p>
+                            //     <p>WiKi url:
+                            // <a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> {selectedPlace.wikiUrl}</a>
+                            //     </p>
+                            // </div>
+                            <>
+                                <Divider orientation="center" style={{ fontSize: 25 }}> Selected Mammals </Divider>
+                                <Card
+                                    hoverable
+                                    // style={{ width: 240 }}
+                                    title={selectedPlace.name}
+                                    extra={<a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> More</a>}
+                                >
+                                    <p>Taxon Name: {selectedPlace.taxonName}</p>
+                                    {/* <Meta title='' description= "Selected mammal"/> */}
+                                </Card>
+                            </>
+                            //     <>
+                            //     <Descriptions title="User Info">
+                            //     <Descriptions.Item label="UserName">Zhou Maomao</Descriptions.Item>
+                            //     <Descriptions.Item label="Telephone">1810000000</Descriptions.Item>
+                            //     <Descriptions.Item label="Live">Hangzhou, Zhejiang</Descriptions.Item>
+                            //     <Descriptions.Item label="Remark">empty</Descriptions.Item>
+                            //     <Descriptions.Item label="Address">
+                            //       No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China
+                            //     </Descriptions.Item>
+                            //   </Descriptions>,
+                            //   </>
                         )}
                     </Col>
                 </Row>

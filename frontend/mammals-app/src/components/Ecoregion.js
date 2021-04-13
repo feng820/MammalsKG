@@ -7,7 +7,6 @@ const { Panel } = Collapse;
 const { Meta } = Card;
 const { Column } = Table;
 
-// TODO: add img
 function Describe(props) {
     var coordinates = [];
     if (props.ecoInfo.ecoregion__coordinates && props.ecoInfo.ecoregion__coordinates !== "None") {
@@ -76,14 +75,12 @@ function arrayToObject(arr) {
 class FancyCard extends React.Component {
     constructor(props) {
         super(props);
-        // console.log(props.item)
 
         var locations = []
         const infos = JSON.parse(props.item.mammal__location_info.replace(/'/g, '"'))
         for (var i = 0; i < infos.length; ++i) {
             locations.push(arrayToObject(infos[i]))
         }
-        // console.log(locations)
 
         const tabList = [
             {
@@ -98,11 +95,11 @@ class FancyCard extends React.Component {
 
         const contentList = {
             tab1: <div>
+                    {/* TODO: 修改src */}
                     <img src={ErrorImg} alt="No img available" width="150" height="200" />
                     <br />
                     {props.item.mammal__taxonName}
                   </div>,
-            // tab2: <p>content2</p>,
             tab2: 
             <Table dataSource={locations} size="small" scroll={{y: 230}} pagination={{
                 total: locations.length,
@@ -134,13 +131,6 @@ class FancyCard extends React.Component {
                     style={{ width: '100%', height: 400 }}
                     title={this.props.item.mammal__name}
                     extra={<a href="#">More</a>}
-                    // cover={<Image
-                    //     className="img"
-                    //     src={this.props.item.uri}
-                    //     height={180}
-                    //     width={180}
-                    //     fallback={ErrorImg}
-                    // />}
                     tabList={this.state.tabList}
                     activeTabKey={this.state.key}
                     onTabChange={key => {
@@ -155,16 +145,6 @@ class FancyCard extends React.Component {
 }
 
 function Accordion(props) {
-    const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-    `;
-    // console.log('hello')
-    // if (props.floras.length > 0) {
-    //     console.log(props.floras[0].uri)
-    // }
-
     const gridStyle = {
         width: '25%',
         textAlign: 'center',
@@ -187,8 +167,6 @@ function Accordion(props) {
             }
             {props.faunaMammalSubs.length > 0 &&
                 <Panel header="Fauna mammals subspecies" key="2">
-                    {/* <p>{text}</p> */}
-                    {/* <FancyCard extends React.></FancyCard extends React.> */}
                     <div className="site-card-wrapper">
                         <Row gutter={[16, 16]}>
                             {props.faunaMammalSubs.map((item) => (
@@ -202,7 +180,6 @@ function Accordion(props) {
             }
             {props.faunaNonMammals.length > 0 &&
                 <Panel header="Fauna non mammals" key="3">
-                    {/* <p>{text}</p> */}
                     <div className="site-card-wrapper">
                         <Row gutter={[16, 16]}>
                             {props.faunaNonMammals.map((item) => (
@@ -216,7 +193,6 @@ function Accordion(props) {
             }
             {props.floras.length > 0 &&
                 <Panel header="Floras" key="4">
-                    {/* <p>{text}</p> */}
                     <div className="site-card-wrapper">
                         <Row gutter={[16, 16]}>
                             {props.floras.map((item) => (
@@ -251,7 +227,6 @@ export class Ecoregion extends Component {
         const url = "http://127.0.0.1:5000/ecoregion/" + this.state.ecoId;
         axios.get(url).then(res => {
             const eco = res.data;
-            // console.log(eco);
             this.setState({
                 ecoInfo: eco.n,
                 faunaMammals: eco.fauna_mammals,
@@ -259,7 +234,6 @@ export class Ecoregion extends Component {
                 faunaMammalSubs: eco.fauna_mammal_subs,
                 floras: eco.floras,
             })
-            // console.log(this.state.floras);
         }).catch(err => {
             const errMsg = err.message || 'Unknown error';
             console.error(errMsg);
