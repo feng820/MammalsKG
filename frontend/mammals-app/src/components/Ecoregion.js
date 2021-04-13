@@ -120,7 +120,7 @@ class FancyCard extends React.Component {
     }
 
     onTabChange = (key, type) => {
-        console.log(key, type);
+        // console.log(key, type);
         this.setState({ [type]: key });
     };
 
@@ -149,7 +149,6 @@ function Accordion(props) {
         width: '25%',
         textAlign: 'center',
     };
-
     return (
         <Collapse accordion>
             {props.faunaMammals.length > 0 &&

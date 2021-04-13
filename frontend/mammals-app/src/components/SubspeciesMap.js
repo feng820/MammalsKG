@@ -115,11 +115,14 @@ function Map(props) {
         paddingTop: '15px',
         height: '300px',
         color: '#fff',
-        size: '20px',
+        fontSize: '20px',
         lineHeight: '7px',
         textAlign: 'center',
         background: '#C0C0C0',
     };
+    const italicStyle = {
+        fontStyle: 'italic',
+    }
     const renderMap = () => {
         return (
             <Fragment>
@@ -181,11 +184,12 @@ function Map(props) {
                                     {noPlaces.map((place) => (
                                         <div>
                                             <div style={contentStyle}>
-                                                <p>Name: {place.name}</p>
-                                                <p>Taxon name: {place.taxonName}</p>
+                                                <p>Name: <span style={italicStyle}>{place.name}</span></p>
+                                                <p>Taxon name: <span style={italicStyle}>{place.taxonName}</span></p>
                                                 {/* TODO: 加入subspecies img */}
                                                 <a href={place.wikiUrl} target="_blank" rel="noreferrer">
                                                 <Image
+                                                    preview={false}
                                                     width={150}
                                                     height={200}
                                                     src={place.mammal__icon || 'error'}
