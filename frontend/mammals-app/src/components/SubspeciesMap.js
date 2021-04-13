@@ -4,17 +4,16 @@ import {
     GoogleMap,
     InfoWindow, Marker, useLoadScript
 } from "@react-google-maps/api";
+import { Col, Row } from 'antd';
 import axios from 'axios';
 import React, { Component, Fragment, useState } from "react";
 
 function Map(props) {
-    // console.log(props.subspecies)
     // The things we need to track in state
     const [mapRef, setMapRef] = useState(null);
     const [selectedPlace, setSelectedPlace] = useState(null);
     const [markerMap, setMarkerMap] = useState({});
-    // const [center, setCenter] = useState({ lat: 44.076613, lng: -98.362239833 });
-    const [center, setCenter] = useState({lat: 0.0, lng: 0.0});
+    const [center, setCenter] = useState({ lat: 0.0, lng: 0.0 });
     const [zoom, setZoom] = useState(30);
     const [clickedLatLng, setClickedLatLng] = useState(null);
     const [infoOpen, setInfoOpen] = useState(false);
@@ -26,24 +25,13 @@ function Map(props) {
         language: "en"
     });
 
-    // The places I want to create markers for.
-    // This could be a data-driven prop.
-    // const myPlaces = [
-    //   { id: "place1", pos: { lat: 39.09366509575983, lng: -94.58751660204751 } },
-    //   { id: "place2", pos: { lat: 39.10894664788252, lng: -94.57926449532226 } },
-    //   { id: "place3", pos: { lat: 42.07602397235644, lng: -94.5184089401211 } }
-    // ];
-
     const myMammals = props.subspecies;
     const myPlaces = []
     const noPlaces = []
     var i = 0
     var type = 0
     myMammals.map((mammal) => {
-        // console.log(mammal)
         mammal.mammal__location_info.map(place => {
-            // console.log(myMammal[index])
-            // console.log(place)
             const coords = place => {
                 var arr = place[2].split(', ')
                 var lat = parseFloat(arr[0].slice(0, -1))
@@ -56,7 +44,6 @@ function Map(props) {
                 }
                 return { lat: lat, lng: lng }
             }
-            // console.log(coords(place))
             myPlaces.push({
                 id: i++, pos: coords(place), place: place[0], time: place[1], name: mammal.mammal__name,
                 taxonName: mammal.mammal__taxonName, wikiUrl: mammal.mammal__wiki_uri,
@@ -64,7 +51,7 @@ function Map(props) {
             })
         })
         type++;
-        
+
         if (mammal.mammal__location_info.length === 0) {
             noPlaces.push({
                 name: mammal.mammal__name, taxonName: mammal.mammal__taxonName,
@@ -72,9 +59,6 @@ function Map(props) {
             })
         }
     })
-    // console.log(myPlaces)
-    // console.log(noPlaces)
-    // return 'hello';
 
     // Iterate myPlaces to size, center, and zoom map to contain all markers
     // TODO: 为什么有的时候无法初始时显示所有pins？
@@ -126,80 +110,68 @@ function Map(props) {
     const renderMap = () => {
         return (
             <Fragment>
-                <GoogleMap
-                    // Do stuff on map initial laod
-                    onLoad={loadHandler}
-                    // Save the current center position in state
-                    onCenterChanged={() => setCenter(mapRef.getCenter().toJSON())}
-                    // Save the user's map click position
-                    onClick={(e) => setClickedLatLng(e.latLng.toJSON())}
-                    center={center}
-                    zoom={zoom}
-                    mapContainerStyle={{
-                        height: "70vh",
-                        width: "100%"
-                    }}
-                >
-                    {myPlaces.map((place) => (
-                        <Marker
-                            key={place.id}
-                            position={place.pos}
-                            onLoad={(marker) => markerLoadHandler(marker, place)}
-                            onMouseOver={(event) => markerClickHandler(event, place)}
-                            // onClick={() => setZoom(8)}
-                            onMouseOut={() => setInfoOpen(false)}
-                            // Not required, but if you want a custom icon:
-                            icon={{
-                                //   path:
-                                //     "M12.75 0l-2.25 2.25 2.25 2.25-5.25 6h-5.25l4.125 4.125-6.375 8.452v0.923h0.923l8.452-6.375 4.125 4.125v-5.25l6-5.25 2.25 2.25 2.25-2.25-11.25-11.25zM10.5 12.75l-1.5-1.5 5.25-5.25 1.5 1.5-5.25 5.25z",
-                                url: `http://maps.google.com/mapfiles/ms/icons/${colorList[place.type % colorList.length]}.png`,
-                                //   fillColor: `${colorList[index]}`,
-                                fillOpacity: 1.0,
-                                strokeWeight: 0,
-                                scale: 1
+                <Row>
+                    <Col span={18}>
+                        <GoogleMap
+                            // Do stuff on map initial laod
+                            onLoad={loadHandler}
+                            // Save the current center position in state
+                            onCenterChanged={() => setCenter(mapRef.getCenter().toJSON())}
+                            // Save the user's map click position
+                            onClick={(e) => setClickedLatLng(e.latLng.toJSON())}
+                            center={center}
+                            zoom={zoom}
+                            mapContainerStyle={{
+                                height: "70vh",
+                                width: "100%"
                             }}
-                        />
-                    ))}
-
-                    {infoOpen && selectedPlace && (
-                        <InfoWindow
-                            anchor={markerMap[selectedPlace.id]}
-                            onCloseClick={() => setInfoOpen(false)}
                         >
+                            {myPlaces.map((place) => (
+                                <Marker
+                                    key={place.id}
+                                    position={place.pos}
+                                    onLoad={(marker) => markerLoadHandler(marker, place)}
+                                    onMouseOver={(event) => markerClickHandler(event, place)}
+                                    onMouseOut={() => setInfoOpen(false)}
+                                    icon={{
+                                        url: `http://maps.google.com/mapfiles/ms/icons/${colorList[place.type % colorList.length]}.png`,
+                                        fillOpacity: 1.0,
+                                        strokeWeight: 0,
+                                        scale: 1
+                                    }}
+                                />
+                            ))}
+
+                            {infoOpen && selectedPlace && (
+                                <InfoWindow
+                                    anchor={markerMap[selectedPlace.id]}
+                                    onCloseClick={() => setInfoOpen(false)}
+                                >
+                                    <div>
+                                        <h3>{selectedPlace.name}</h3>
+                                        <div>
+                                            <p>Place found: {selectedPlace.place}</p>
+                                            <p>Found time: {selectedPlace.time}</p>
+                                            <p>Coordinate: {selectedPlace.coordinate}</p>
+                                        </div>
+                                    </div>
+                                </InfoWindow>
+                            )}
+                        </GoogleMap>
+                    </Col>
+
+                    <Col span={6}>
+                        {selectedPlace && (
                             <div>
-                                <h3>{selectedPlace.name}</h3>
-                                <div>
-                                    <p>Place found: {selectedPlace.place}</p>
-                                    <p>Found time: {selectedPlace.time}</p>
-                                    <p>Coordinate: {selectedPlace.coordinate}</p>
-                                </div>
-                            </div>
-                        </InfoWindow>
-                    )}
-                </GoogleMap>
-
-                {/* Our center position always in state */}
-                <h3>
-                    Center {center.lat}, {center.lng}
-                </h3>
-
-                {/* Position of the user's map click */}
-                {/* {clickedLatLng && (
-                    <h3>
-                        You clicked: {clickedLatLng.lat}, {clickedLatLng.lng}
-                    </h3>
-                )} */}
-
-                {/* Position of the user's map click */}
-                {selectedPlace && (
-                    <div>
-                        <h3>Name: {selectedPlace.name}</h3>
-                        <h3>Taxon Name: {selectedPlace.taxonName}</h3>
-                        <h3>WiKi url: 
+                                <h3>Name: {selectedPlace.name}</h3>
+                                <h3>Taxon Name: {selectedPlace.taxonName}</h3>
+                                <h3>WiKi url:
                             <a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> {selectedPlace.wikiUrl}</a>
-                        </h3>
-                    </div>
-                )}
+                                </h3>
+                            </div>
+                        )}
+                    </Col>
+                </Row>
             </Fragment>
         );
     };
@@ -210,7 +182,6 @@ function Map(props) {
 export class SubspeciesMap extends Component {
     constructor(props) {
         super();
-        // console.log(props.match.params.mammalId);
         this.state = {
             mammalId: props.match.params.mammalId,
             subspecies: [],
@@ -222,11 +193,9 @@ export class SubspeciesMap extends Component {
         const url = "http://127.0.0.1:5000/mammal/" + this.state.mammalId;
         axios.get(url).then(res => {
             const mammal = res.data;
-            // console.log(mammal);
             this.setState({
                 subspecies: mammal.subspecies,
             })
-            // console.log(this.state.subspecies);
         }).catch(err => {
             const errMsg = err.message || 'Unknown error';
             console.error(errMsg);
@@ -241,7 +210,3 @@ export class SubspeciesMap extends Component {
         )
     }
 }
-
-
-
-// export default SubspeciesMap;
