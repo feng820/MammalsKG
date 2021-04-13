@@ -19,7 +19,7 @@ function Map(props) {
     const [selectedPlace, setSelectedPlace] = useState(null);
     const [markerMap, setMarkerMap] = useState({});
     const [center, setCenter] = useState({ lat: 0.0, lng: 0.0 });
-    const [zoom, setZoom] = useState(30);
+    const [zoom, setZoom] = useState(3);
     const [clickedLatLng, setClickedLatLng] = useState(null);
     const [infoOpen, setInfoOpen] = useState(false);
 
@@ -66,7 +66,6 @@ function Map(props) {
     })
 
     // Iterate myPlaces to size, center, and zoom map to contain all markers
-    // TODO: 为什么有的时候无法初始时显示所有pins？
     const fitBounds = (map) => {
         const bounds = new window.google.maps.LatLngBounds();
         myPlaces.map((place) => {
@@ -77,10 +76,11 @@ function Map(props) {
     };
 
     const loadHandler = (map) => {
+        setZoom(3);
         // Store a reference to the google map instance in state
         setMapRef(map);
-        // Fit map bounds to contain all markers
-        fitBounds(map);
+        // TODO: Fit map bounds to contain all markers
+        // fitBounds(map);
     };
 
     // We have to create a mapping of our places to actual Marker objects

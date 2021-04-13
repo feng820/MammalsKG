@@ -34,7 +34,6 @@ function Describe(props) {
                         <Descriptions.Item label="Area">{props.ecoInfo.ecoregion__Area}</Descriptions.Item>
                         <Descriptions.Item label="URL" span={3}><a target="_blank" href={props.ecoInfo.ecoregion__url} rel="noreferrer">
                             {props.ecoInfo.ecoregion__url}</a></Descriptions.Item>
-                        <Descriptions.Item label="URI" span={3}>{props.ecoInfo.uri}</Descriptions.Item>
                     </Descriptions>
                 </Col>
             </Row>
@@ -57,7 +56,7 @@ function MyCard(props) {
                     fallback={ErrorImg}
                 />}
             >
-                <Meta title={props.item.non_mammal__name} description={props.item.non_mammal__taxonName} />
+                <Meta title={props.item.non_mammal__name === "None" ? null : props.item.non_mammal__name} description={props.item.non_mammal__taxonName} />
             </Card>
         </Col>
     )
@@ -130,7 +129,7 @@ class FancyCard extends React.Component {
                 <Card
                     style={{ width: '100%', height: 400 }}
                     title={this.props.item.mammal__name}
-                    extra={<a href="#">More</a>}
+                    extra={<a href={this.props.item.mammal__wiki_uri} target="_blank" rel="noreferrer">More</a>}
                     tabList={this.state.tabList}
                     activeTabKey={this.state.key}
                     onTabChange={key => {
@@ -155,6 +154,7 @@ function Accordion(props) {
                 <Panel header="Fauna mammals" key="1">
                     <Card>
                         {props.faunaMammals.map((animal, index) => (
+                            animal[0] &&
                             <Link to={{
                                 pathname: "/mammal/" + animal[0],
                             }}>
