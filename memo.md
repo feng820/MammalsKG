@@ -7,3 +7,5 @@ fauna_non_mammals和Floras 为什么会有mammal？
 
 Other Mammals: http://localhost:3000/mammal/813/map
 
+Demo map: http://localhost:3000/mammal/524/map
+

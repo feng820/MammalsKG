@@ -10,7 +10,13 @@ const { Column } = Table;
 function Describe(props) {
     var coordinates = [];
     if (props.ecoInfo.ecoregion__coordinates && props.ecoInfo.ecoregion__coordinates !== "None") {
-        coordinates = JSON.parse(props.ecoInfo.ecoregion__coordinates.replace(/'/g, '"'));
+        try {
+
+            coordinates = JSON.parse(props.ecoInfo.ecoregion__coordinates.replace(/'/g, '"'));
+        } catch (e) {
+            return <></>
+        }
+        // coordinates = JSON.parse(props.ecoInfo.ecoregion__coordinates.replace(/'/g, '"'));
     }
     return (
         <div>
@@ -56,7 +62,13 @@ function MyCard(props) {
                     fallback={ErrorImg}
                 />}
             >
-                <Meta title={props.item.non_mammal__name === "None" ? null : props.item.non_mammal__name} description={props.item.non_mammal__taxonName} />
+
+                {props.item.non_mammal__name === "None" ? null : props.item.non_mammal__name}
+                <br />
+                {props.item.non_mammal__wiki_uri !== null ?
+                    <a href={props.item.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{props.item.non_mammal__taxonName}</a>
+                    : props.item.non_mammal__taxonName
+                }
             </Card>
         </Col>
     )
@@ -94,21 +106,26 @@ class FancyCard extends React.Component {
 
         const contentList = {
             tab1: <div>
-                    {/* TODO: 修改src */}
-                    <img src={ErrorImg} alt="No img available" width="150" height="200" />
-                    <br />
-                    {props.item.mammal__taxonName}
-                  </div>,
-            tab2: 
-            <Table dataSource={locations} size="small" scroll={{y: 230}} pagination={{
-                total: locations.length,
-                pageSize: locations.length,
-                hideOnSinglePage: true
-            }}>
-                <Column title="Name" dataIndex="name" key="name" />
-                <Column title="Time" dataIndex="time" key="time" />
-                <Column title="Coordinate" dataIndex="coordinate" key="coordinate" />
-            </Table>
+                <Image
+                    className="img"
+                    src={props.item.mammal__icon || null}
+                    height={230}
+                    width={270}
+                    fallback={ErrorImg}
+                />
+                <br />
+                {props.item.mammal__taxonName}
+            </div>,
+            tab2:
+                <Table dataSource={locations} size="small" scroll={{ y: 230 }} pagination={{
+                    total: locations.length,
+                    pageSize: locations.length,
+                    hideOnSinglePage: true
+                }}>
+                    <Column title="Name" dataIndex="name" key="name" />
+                    <Column title="Time" dataIndex="time" key="time" />
+                    <Column title="Coordinate" dataIndex="coordinate" key="coordinate" />
+                </Table>
         };
 
         this.state = {

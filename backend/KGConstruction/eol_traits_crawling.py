@@ -52,8 +52,8 @@ def parse_traits(eol_id):
         for trait in traits:
             for my_trait in my_traits:  # Find all traits to extract
                 # Format trait text, make sure habitat breadth is not include!
-                if my_trait in trait.h3.text.strip().lower() and trait.h3.text.strip().lower() != "habitat breadth"\
-                        and trait.h3.text.strip().lower() != "body mass":
+                if my_trait in trait.h3.text.strip().lower() and trait.h3.text.strip().lower() != "habitat breadth":
+                        # and trait.h3.text.strip().lower() != "body mass":
                     # in page to match with my trait
                     tmp = trait.find_next_sibling()
                     while tmp and tmp.name == "li":  # Make sure tmp.name is not None
@@ -66,8 +66,7 @@ def parse_traits(eol_id):
 
                         trait_mod = tmp.find('div', {'class': 'trait-mod'})
                         # dict val type is either str or tuple
-
-                        if my_trait == "mass":
+                        if my_trait == "mass":  # body mass skip
                             # 单位是kg
                             # trait_val = str(float(trait_val.replace(" g", "")) / 1000) + " kg"
                             if trait_val.endswith(" g"):
@@ -78,13 +77,13 @@ def parse_traits(eol_id):
                             if not collection["eol_mass"]:  # If "mass" is empty yet
                                 if not trait_mod:
                                     collection["eol_mass"] = trait_val
-                                else:
-                                    # collection["eol_mass"] = trait_val + trait_mod
+                                elif "neonate" not in str(trait_mod) and "weanling" not in str(trait_mod):
                                     collection["eol_mass"] = trait_val
+                                else:
+                                    collection["eol_mass"] = 0
                             else:
-                                if trait_mod and trait_mod == "(adult)":
+                                if trait_mod and "adult" in str(trait_mod):
                                     print("Replace mass with (adult) as trait_mode")
-                                    # collection["eol_mass"] = trait_val + trait_mod
                                     collection["eol_mass"] = trait_val
                         elif my_trait == "length":
                             # 单位是m

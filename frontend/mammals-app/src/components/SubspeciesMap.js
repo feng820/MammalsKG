@@ -12,6 +12,7 @@ import { Card, Carousel, Col, Divider, Image, Row } from 'antd';
 import axios from 'axios';
 import React, { Component, Fragment, useState } from "react";
 import ErrorImg from '../assets/No_image_available.svg';
+const { Meta } = Card;
 
 function Map(props) {
     // The things we need to track in state
@@ -52,7 +53,7 @@ function Map(props) {
             myPlaces.push({
                 id: i++, pos: coords(place), place: place[0], time: place[1], name: mammal.mammal__name,
                 taxonName: mammal.mammal__taxonName, wikiUrl: mammal.mammal__wiki_uri,
-                uri: mammal.uri, type: type, coordinate: place[2]
+                uri: mammal.uri, type: type, coordinate: place[2], mammalIcon: mammal.mammal__icon
             })
         })
         type++;
@@ -60,10 +61,11 @@ function Map(props) {
         if (mammal.mammal__location_info.length === 0) {
             noPlaces.push({
                 name: mammal.mammal__name, taxonName: mammal.mammal__taxonName,
-                wikiUrl: mammal.mammal__wiki_uri
+                wikiUrl: mammal.mammal__wiki_uri, mammalIcon: mammal.mammal__icon
             })
         }
     })
+    // console.log(myPlaces)
 
     // Iterate myPlaces to size, center, and zoom map to contain all markers
     const fitBounds = (map) => {
@@ -179,7 +181,7 @@ function Map(props) {
                     <Col span={6}>
                         {noPlaces.length > 0 && (
                             <>
-                                <Divider orientation="center" style={{ fontSize: 25 }}> Other Mammals </Divider>
+                                <Divider orientation="center" style={{ fontSize: 25 }}> Other Subspecies </Divider>
                                 <Carousel autoplay>
                                     {noPlaces.map((place) => (
                                         <div>
@@ -188,13 +190,13 @@ function Map(props) {
                                                 <p>Taxon name: <span style={italicStyle}>{place.taxonName}</span></p>
                                                 {/* TODO: 加入subspecies img */}
                                                 <a href={place.wikiUrl} target="_blank" rel="noreferrer">
-                                                <Image
-                                                    preview={false}
-                                                    width={150}
-                                                    height={200}
-                                                    src={place.mammal__icon || 'error'}
-                                                    fallback={ErrorImg}
-                                                />
+                                                    <Image
+                                                        preview={false}
+                                                        width={310}
+                                                        height={190}
+                                                        src={place.mammalIcon || 'error'}
+                                                        fallback={ErrorImg}
+                                                    />
                                                 </a>
                                             </div>
                                         </div>
@@ -213,15 +215,23 @@ function Map(props) {
                             //     </p>
                             // </div>
                             <>
-                                <Divider orientation="center" style={{ fontSize: 25 }}> Selected Mammals </Divider>
+                                <Divider orientation="center" style={{ fontSize: 25 }}> Selected Subspecies</Divider>
                                 <Card
                                     hoverable
-                                    // style={{ width: 240 }}
+                                    // style={{ width: 450, height: 50 }}
                                     title={selectedPlace.name}
+                                    // cover={<img alt="example" src={selectedPlace.mammalIcon} />}
                                     extra={<a target="_blank" href={selectedPlace.wikiUrl} rel="noreferrer"> More</a>}
                                 >
-                                    <p>Taxon Name: {selectedPlace.taxonName}</p>
-                                    {/* <Meta title='' description= "Selected mammal"/> */}
+                                    <Image
+                                        preview={false}
+                                        width={430}
+                                        height={300}
+                                        src={selectedPlace.mammalIcon || 'error'}
+                                        fallback={ErrorImg}
+                                    />
+                                    {/* <p>Taxon Name: {selectedPlace.taxonName}</p> */}
+                                    <Meta description={selectedPlace.taxonName} />
                                 </Card>
                             </>
                             //     <>
