@@ -75,7 +75,7 @@ def construct_triples():
             my_kg.add((uri, MAMMAL.Average_lifespan_wild, Literal(info_dict['Average_lifespan_wild'])))
             my_kg.add((uri, MAMMAL.Average_lifespan_captivity, Literal(info_dict['Average_lifespan_captivity'])))
 
-    with open('non_mammal_class.json', 'r') as f_in:
+    with open('non_mammal_class_v1.json', 'r') as f_in:
         non_mammal_dict = json.load(f_in)
         for key, info_dict in non_mammal_dict.items():
             uri = NON_MAMMAL.__getitem__(key)
@@ -83,6 +83,8 @@ def construct_triples():
             my_kg.add((uri, NON_MAMMAL.name, Literal(info_dict['name'])))
             my_kg.add((uri, NON_MAMMAL.taxonName, Literal(info_dict['taxonName'])))
             my_kg.add((uri, NON_MAMMAL.icon, Literal(info_dict['icon'])))
+            wiki_uri = info_dict.get('url')
+            my_kg.add((uri, NON_MAMMAL.wiki_uri, Literal(wiki_uri)))
 
     with open('ecoregion_class_new.json', 'r') as f_in:
         ecoregion_dict = json.load(f_in)
@@ -122,7 +124,7 @@ def construct_triples():
             if len(info_dict['mammals_subs']) == 0:
                 my_kg.add((uri, MAMMAL.fauna_mammal_subs, Literal(None)))
 
-    with open('subspecies_class.json', 'r') as f_in:
+    with open('subspecies_class_v1.json', 'r') as f_in:
         subspecies_dict = json.load(f_in)
         for key, info_dict in subspecies_dict.items():
             uri = MAMMAL.__getitem__(key)
@@ -130,6 +132,10 @@ def construct_triples():
             my_kg.add((uri, MAMMAL.name, Literal(info_dict['name'])))
             my_kg.add((uri, MAMMAL.taxonName, Literal(info_dict['taxonName'])))
             my_kg.add((uri, MAMMAL.location_info, Literal(info_dict['location_info'])))
+            icon = info_dict.get('icon')
+            my_kg.add((uri, MAMMAL.icon, Literal(icon)))
+            wiki_uri = info_dict.get('url')
+            my_kg.add((uri, MAMMAL.wiki_uri, Literal(wiki_uri)))
 
     my_kg.serialize('mammals_kg.ttl', format="turtle")
 
