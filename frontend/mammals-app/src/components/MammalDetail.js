@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Image, Descriptions, Row, Col, Tag, Statistic, List, Divider, Button, Card } from 'antd';
+import { Image, Descriptions, Row, Col, Tag, Statistic, List, Divider, Button, Card, Collapse } from 'antd';
 import ErrorImg from '../assets/No_image_available.svg'
 import { Link } from "react-router-dom";
 
@@ -69,13 +69,25 @@ export class MammalDetail extends Component {
                             <Descriptions.Item label="Status">{this.state.mammalInfo.mammal__status}</Descriptions.Item>
                             <Descriptions.Item label="Average Length">
                                 <Statistic 
-                                    value={this.state.mammalInfo.mammal__eol_length} 
+                                    value={
+                                        this.state.mammalInfo.mammal__Range_length && this.state.mammalInfo.mammal__Range_length.length == 2
+                                        ?
+                                        (this.state.mammalInfo.mammal__Range_length[0] + this.state.mammalInfo.mammal__Range_length[1]) / 2
+                                        :
+                                        this.state.mammalInfo.mammal__eol_length
+                                    } 
                                     valueStyle={{fontSize: 15}} 
                                     suffix=" m" />
                             </Descriptions.Item>
                             <Descriptions.Item label="Average Mass">
                                 <Statistic 
-                                    value={this.state.mammalInfo.mammal__eol_mass} 
+                                    value={
+                                        this.state.mammalInfo.mammal__Range_mass && this.state.mammalInfo.mammal__Range_mass.length == 2
+                                        ?
+                                        (this.state.mammalInfo.mammal__Range_mass[0] + this.state.mammalInfo.mammal__Range_mass[1]) / 2
+                                        :
+                                        this.state.mammalInfo.mammal__eol_mass
+                                    } 
                                     valueStyle={{fontSize: 15}} 
                                     suffix=" kg" />
                             </Descriptions.Item>
@@ -139,84 +151,114 @@ export class MammalDetail extends Component {
                     </Col>
                 </Row>
                 
-                <Divider orientation="center" style={{fontSize: 30}}> Subspecies/Habitats </Divider>
+                <Divider orientation="center" style={{fontSize: 30}}> Subspecies </Divider>
+                <Link to={{
+                        pathname: "/mammal/" + this.state.mammalID + "/map",
+                    }}>
+                    <Button type="primary"> Show on Map </Button>
+                </Link>
                 <Row justify="space-around" style={{marginTop: 20}}>
-                    <Col span={8}>
-                        <Divider orientation="center">
-                            Subspecies 
-                            <Divider type="vertical" />
-                            <Link to={{
-                                pathname: "/mammal/" + this.state.mammalID + "/map",
-                            }}>
-                                <Button type="primary"> Show on Map </Button>
-                            </Link>
-                        </Divider>
-                        <List
-                            itemLayout="vertical"
-                            size="small"
-                            bordered
-                            pagination={{
-                                pageSize: 5,
-                            }}
-                            dataSource={this.state.subspecies.map(n => n.mammal__name)}
-                            renderItem={item => <List.Item key={item}>{item}</List.Item>}
-                        />
+                    <Col span={20}>
+                        <Row gutter={250}>
+                            {this.state.subspecies.map((n, index) => 
+                                <Col span={3} key={index}>
+                                    <Card
+                                        hoverable
+                                        style={{ width: 180}}
+                                        cover={<Image
+                                                className="img"
+                                                src={n.mammal__icon}
+                                                height={180} 
+                                                width={180}
+                                                fallback={ErrorImg}
+                                        />}>
+                                        <Card.Meta 
+                                            description={
+                                                n.mammal__wiki_uri !== null 
+                                                ?
+                                                <a href={n.mammal__wiki_uri} target="_blank" rel="noreferrer">{n.mammal__name}</a>
+                                                : 
+                                                n.mammal__name
+                                        }
+                                        />
+                                    </Card>
+                                </Col>
+                            )},
+                        </Row>
                     </Col>
-                    <Col span={8}>
-                        <Divider orientation="center">
-                            Ecoregions 
-                        </Divider>
-                        <List
-                            style={{marginTop: 22}}
-                            itemLayout="vertical"
-                            size="small"
-                            bordered
-                            pagination={{
-                                pageSize: 5,
-                            }}
-                            dataSource={this.state.ecoregion}
-                            renderItem={item => 
-                                <List.Item key={item}>
-                                    <Link to={"/ecoregion/" + item[0]}>
-                                        {item[1]}
-                                    </Link>
-                                </List.Item>
+                </Row>
+
+                <Divider orientation="center" style={{fontSize: 30}}> Ecoregion </Divider>
+                <Row justify="center" style={{marginBottom: 30}}>
+                        <Col span={24}>
+                            {this.state.ecoregion.length > 0 &&
+                                <Card>
+                                    {this.state.ecoregion.map((eco, index) => (
+                                        <Link to={"/ecoregion/" + eco[0]}>
+                                            <Card.Grid 
+                                                style={{width: '25%', textAlign: 'center', height: 80}} 
+                                                key={index}
+                                            >{eco[1]}</Card.Grid>
+                                        </Link>
+                                    ))}
+                                </Card>
                             }
-                        />
-                    </Col>
+                        </Col>
                 </Row>
                 
                 <Divider orientation="center" style={{fontSize: 30}}> Food Chain </Divider>
                 <div>
                     <Row justify="center" style={{marginBottom: 30}}>
-                        <Col span={20}>
-                            <Descriptions title="Mammal Related" bordered>
-                                <Descriptions.Item label="Predators" span={3}>
-                                    {this.state.predators.map((tag, i) => 
-                                        <Link to={"/mammal/" + tag[0]}>
-                                            <Tag key={i} color="cyan" className="mammal-food-chain">{tag[1]}</Tag>
-                                        </Link>
-                                    )}
-                                </Descriptions.Item>
+                        <Col span={24}>
+                            <Collapse accordion defaultActiveKey={['1']}>
+                                {this.state.predators.length > 0 && !this.state.predators[0].includes(null) &&
+                                    <Collapse.Panel header="Mammal Predators" key="1">
+                                        <Card>
+                                            {this.state.predators.map((animal, index) => {
+                                                <Link to={"/mammal/" + animal[0]}>
+                                                    <Card.Grid 
+                                                        style={{width: '25%', textAlign: 'center',}} 
+                                                        key={index}
+                                                    >{animal[1]}</Card.Grid>
+                                                </Link>
+                                            })}
+                                        </Card>
+                                    </Collapse.Panel>
+                                }
 
-                                <Descriptions.Item label="Preys" span={3}>
-                                    {this.state.preys.map((tag, i) => 
-                                        <Link to={"/mammal/" + tag[0]}>
-                                            <Tag key={i} color="cyan" className="mammal-food-chain">{tag[1]}</Tag>
-                                        </Link>
-                                    )}
-                                </Descriptions.Item>
-                                
-                                <Descriptions.Item label="Competitors" span={3}>
-                                    {this.state.competitors.map((tag, i) => 
-                                        <Link to={"/mammal/" + tag[0]} key={i}>
-                                            <Tag color="cyan" className="mammal-food-chain">{tag[1]}</Tag>
-                                        </Link>
-                                    )}
-                                </Descriptions.Item>
+                                {this.state.preys.length > 0 && !this.state.preys[0].includes(null) &&
+                                    <Collapse.Panel header="Mammal Preys" key="2">
+                                        <Card>
+                                            {this.state.preys.map((animal, index) => 
+                                                <Link to={"/mammal/" + animal[0]}>
+                                                    <Card.Grid 
+                                                        style={{width: '25%', textAlign: 'center'}} 
+                                                        key={index}
+                                                    >{animal[1]}</Card.Grid>
+                                                </Link>
+                                            )}
+                                        </Card>
 
-                            </Descriptions>
-                        </Col>
+                                    </Collapse.Panel>
+                                }
+
+                                {this.state.competitors.length > 0 && !this.state.competitors[0].includes(null) &&
+                                    <Collapse.Panel header="Mammal Competitors" key="3">
+                                        <Card>
+                                            {this.state.competitors.map((animal, index) => 
+                                                <Link to={"/mammal/" + animal[0]}>
+                                                    <Card.Grid 
+                                                        style={{width: '25%', textAlign: 'center'}} 
+                                                        key={index}
+                                                    >{animal[1]}</Card.Grid>
+                                                </Link>
+                                            )}
+                                        </Card>
+
+                                    </Collapse.Panel>
+                                }
+                            </Collapse>
+                       </Col>
                     </Row>
 
                     {this.state.nm_predators.length > 0 && 
@@ -237,7 +279,15 @@ export class MammalDetail extends Component {
                                                             width={180}
                                                             fallback={ErrorImg}
                                                     />}>
-                                                    <Card.Meta description={n.non_mammal__name} />
+                                                    <Card.Meta 
+                                                        description={
+                                                            n.non_mammal__wiki_uri !== null 
+                                                            ?
+                                                            <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
+                                                            : 
+                                                            n.non_mammal__name
+                                                    }
+                                                    />
                                                 </Card>
                                             </Col>
                                         )},
@@ -265,7 +315,15 @@ export class MammalDetail extends Component {
                                                             width={180}
                                                             fallback={ErrorImg}
                                                     />}>
-                                                    <Card.Meta description={n.non_mammal__name} />
+                                                    <Card.Meta 
+                                                        description={
+                                                            n.non_mammal__wiki_uri !== null 
+                                                            ?
+                                                            <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
+                                                            : 
+                                                            n.non_mammal__name
+                                                    }
+                                                    />
                                                 </Card>
                                             </Col>
                                         )},
@@ -293,7 +351,14 @@ export class MammalDetail extends Component {
                                                             width={180}
                                                             fallback={ErrorImg}
                                                     />}>
-                                                    <Card.Meta description={n.non_mammal__name} />
+                                                    <Card.Meta 
+                                                        description={
+                                                            n.non_mammal__wiki_uri !== null 
+                                                            ?
+                                                            <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
+                                                            : 
+                                                            n.non_mammal__name
+                                                    } />
                                                 </Card>
                                             </Col>
                                         )},

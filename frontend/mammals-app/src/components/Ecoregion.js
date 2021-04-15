@@ -166,7 +166,7 @@ function Accordion(props) {
         textAlign: 'center',
     };
     return (
-        <Collapse accordion>
+        <Collapse accordion defaultActiveKey={['1']}>
             {props.faunaMammals.length > 0 &&
                 <Panel header="Fauna mammals" key="1">
                     <Card>
