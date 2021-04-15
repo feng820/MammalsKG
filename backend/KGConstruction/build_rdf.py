@@ -14,7 +14,7 @@ def construct_triples():
     my_kg.bind('non_mammal', NON_MAMMAL)
     my_kg.bind('ecoregion', ECOREGION)
 
-    with open('species_class.json', 'r') as f_in:
+    with open('species_class_v2.json', 'r') as f_in:
         species_dict = json.load(f_in)
         for key, info_dict in species_dict.items():
             uri = MAMMAL.__getitem__(key)
@@ -86,7 +86,7 @@ def construct_triples():
             wiki_uri = info_dict.get('url')
             my_kg.add((uri, NON_MAMMAL.wiki_uri, Literal(wiki_uri)))
 
-    with open('ecoregion_class_new.json', 'r') as f_in:
+    with open('ecoregion_class_new_v1.json', 'r') as f_in:
         ecoregion_dict = json.load(f_in)
         for key, info_dict in ecoregion_dict.items():
             uri = ECOREGION.__getitem__(key)
