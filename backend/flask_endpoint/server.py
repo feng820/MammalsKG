@@ -35,6 +35,7 @@ def start_server():
         keyword = request.args.get('keyword')
         status = request.args.get('status')
         mass_range = request.args.get('mass_range')
+        mass_greater_than = request.args.get('greater_than')
         length_range = request.args.get('length_range')
         lifespan_range = request.args.get('lifespan_range')
 
@@ -53,16 +54,19 @@ def start_server():
         if mass_range:
             try:
                 mass_range = json.loads(mass_range)
-                query += ' AND n.mammal__eol_mass >= ' + str(mass_range[0]) + \
-                         ' AND n.mammal__eol_mass <= ' + str(mass_range[1])
+                if mass_greater_than:
+                    query += ' AND n.mammal__avg_mass >= ' + str(mass_range[1])
+                else:
+                    query += ' AND n.mammal__avg_mass >= ' + str(mass_range[0]) + \
+                             ' AND n.mammal__avg_mass <= ' + str(mass_range[1])
             except JSONDecodeError as e:
                 print(e)
 
         if length_range:
             try:
                 length_range = json.loads(length_range)
-                query += ' AND n.mammal__eol_length >= ' + str(length_range[0]) + \
-                         ' AND n.mammal__eol_length <= ' + str(length_range[1])
+                query += ' AND n.mammal__avg_length >= ' + str(length_range[0]) + \
+                         ' AND n.mammal__avg_length <= ' + str(length_range[1])
             except JSONDecodeError as e:
                 print(e)
 
