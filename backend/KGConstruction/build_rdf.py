@@ -27,8 +27,6 @@ def construct_triples():
                 my_kg.add((uri, MAMMAL.subspecies, MAMMAL[subspecies_id]))
 
             # eol
-            my_kg.add((uri, MAMMAL.eol_mass, Literal(info_dict['eol_mass'], datatype=XSD.double)))
-            my_kg.add((uri, MAMMAL.eol_length, Literal(info_dict['eol_length'], datatype=XSD.double)))
             my_kg.add((uri, MAMMAL.eol_life_span, Literal(info_dict['eol_life_span'], datatype=XSD.double)))
             my_kg.add((uri, MAMMAL.eol_geographic_distribution, Literal(info_dict['eol_geographic_distribution'])))
             my_kg.add((uri, MAMMAL.img, Literal(info_dict['img'])))
@@ -70,10 +68,24 @@ def construct_triples():
             my_kg.add((uri, MAMMAL.Animal_Foods, Literal(info_dict['Animal_Foods'])))
             my_kg.add((uri, MAMMAL.Plant_Foods, Literal(info_dict['Plant_Foods'])))
             my_kg.add((uri, MAMMAL.Key_Behaviors, Literal(info_dict['Key_Behaviors'])))
-            my_kg.add((uri, MAMMAL.Range_mass, Literal(info_dict['Range_mass'])))
-            my_kg.add((uri, MAMMAL.Range_length, Literal(info_dict['Range_length'])))
             my_kg.add((uri, MAMMAL.Average_lifespan_wild, Literal(info_dict['Average_lifespan_wild'])))
             my_kg.add((uri, MAMMAL.Average_lifespan_captivity, Literal(info_dict['Average_lifespan_captivity'])))
+
+            avg_mass = info_dict['eol_mass']
+            range_mass = info_dict['Range_mass']
+            if len(range_mass) == 2:
+                avg_mass = (range_mass[0] + range_mass[1]) / 2
+
+            avg_length = info_dict['eol_length']
+            range_length = info_dict['Range_length']
+            if len(range_length) == 2:
+                try:
+                    avg_length = (range_length[0] + range_length[1]) / 2
+                except TypeError:
+                    print("bad input")
+
+            my_kg.add((uri, MAMMAL.avg_mass, Literal(avg_mass)))
+            my_kg.add((uri, MAMMAL.avg_length, Literal(avg_length)))
 
     with open('non_mammal_class_v1.json', 'r') as f_in:
         non_mammal_dict = json.load(f_in)
@@ -137,7 +149,7 @@ def construct_triples():
             wiki_uri = info_dict.get('url')
             my_kg.add((uri, MAMMAL.wiki_uri, Literal(wiki_uri)))
 
-    my_kg.serialize('mammals_kg.ttl', format="turtle")
+    my_kg.serialize('mammals_kg_v1.ttl', format="turtle")
 
 
 if __name__ == '__main__':
