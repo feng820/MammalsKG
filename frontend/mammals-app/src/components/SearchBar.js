@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Input, Table, Tag, Alert, Button, Select, Form, Slider } from 'antd';
+import { Input, Table, Tag, Alert, Button, Select, Form, Slider, Checkbox } from 'antd';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 
@@ -91,6 +91,10 @@ export class SearchBar extends Component {
             showResult: false
         })
     }
+
+    onChecked = () => {
+
+    }
     
     render() {
         const layout = {
@@ -101,6 +105,12 @@ export class SearchBar extends Component {
               span: 8,
             },
         };
+
+        const massLayout = {
+            wrapperCol: {
+                span: 16,
+            },
+        }
 
         const tailLayout = {
             wrapperCol: {
@@ -162,21 +172,29 @@ export class SearchBar extends Component {
                     </Form.Item>
 
                     <Form.Item
-                        name="mass_range"
+                        {...massLayout}                    
                         label="Mass (kg)"
-                        style={{marginBottom: 10}}>
-                        <Slider 
-                            range 
-                            max={1000}
-                            marks={
-                                {
-                                    0: '0',
-                                    100: '100',
-                                    500: '500',
-                                    1000: '1000'
+                        style={{marginBottom: -30}}>
+                        <Form.Item name="mass_range" style={{width: 400}}>
+                            <Slider
+                                range 
+                                max={500}
+                                marks={
+                                    {
+                                        0: '0',
+                                        250: '250',
+                                        500: '500',
+                                    }
                                 }
-                            }
-                        />
+                            />
+                        </Form.Item>
+                        <Form.Item
+                                valuePropName="checked"
+                                name="greater_than"
+                                className="mass-checkbox"
+                            >
+                                <Checkbox>Enable rightbound greater than</Checkbox>
+                        </Form.Item>
                     </Form.Item>
 
                     <Form.Item

@@ -69,31 +69,19 @@ export class MammalDetail extends Component {
                             <Descriptions.Item label="Status">{this.state.mammalInfo.mammal__status}</Descriptions.Item>
                             <Descriptions.Item label="Average Length">
                                 <Statistic 
-                                    value={
-                                        this.state.mammalInfo.mammal__Range_length && this.state.mammalInfo.mammal__Range_length.length == 2
-                                        ?
-                                        (this.state.mammalInfo.mammal__Range_length[0] + this.state.mammalInfo.mammal__Range_length[1]) / 2
-                                        :
-                                        this.state.mammalInfo.mammal__eol_length
-                                    } 
+                                    value={ this.state.mammalInfo.mammal__avg_length } 
                                     valueStyle={{fontSize: 15}} 
                                     suffix=" m" />
                             </Descriptions.Item>
                             <Descriptions.Item label="Average Mass">
                                 <Statistic 
-                                    value={
-                                        this.state.mammalInfo.mammal__Range_mass && this.state.mammalInfo.mammal__Range_mass.length == 2
-                                        ?
-                                        (this.state.mammalInfo.mammal__Range_mass[0] + this.state.mammalInfo.mammal__Range_mass[1]) / 2
-                                        :
-                                        this.state.mammalInfo.mammal__eol_mass
-                                    } 
+                                    value={ this.state.mammalInfo.mammal__avg_mass } 
                                     valueStyle={{fontSize: 15}} 
                                     suffix=" kg" />
                             </Descriptions.Item>
                             <Descriptions.Item label="Average Life Span">
                                 <Statistic 
-                                    value={this.state.mammalInfo.mammal__eol_life_span} 
+                                    value={ this.state.mammalInfo.mammal__eol_life_span } 
                                     valueStyle={{fontSize: 15}} 
                                     suffix=" years" />
                             </Descriptions.Item>
@@ -214,14 +202,14 @@ export class MammalDetail extends Component {
                                 {this.state.predators.length > 0 && !this.state.predators[0].includes(null) &&
                                     <Collapse.Panel header="Mammal Predators" key="1">
                                         <Card>
-                                            {this.state.predators.map((animal, index) => {
+                                            {this.state.predators.map((animal, index) => 
                                                 <Link to={"/mammal/" + animal[0]}>
                                                     <Card.Grid 
                                                         style={{width: '25%', textAlign: 'center',}} 
                                                         key={index}
                                                     >{animal[1]}</Card.Grid>
                                                 </Link>
-                                            })}
+                                            )}
                                         </Card>
                                     </Collapse.Panel>
                                 }
