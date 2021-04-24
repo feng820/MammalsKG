@@ -269,7 +269,7 @@ export class MammalDetail extends Component {
                                                     />}>
                                                     <Card.Meta 
                                                         description={
-                                                            n.non_mammal__wiki_uri !== null 
+                                                            n.non_mammal__wiki_uri !== "None" 
                                                             ?
                                                             <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
                                                             : 
@@ -305,7 +305,7 @@ export class MammalDetail extends Component {
                                                     />}>
                                                     <Card.Meta 
                                                         description={
-                                                            n.non_mammal__wiki_uri !== null 
+                                                            n.non_mammal__wiki_uri !== "None" 
                                                             ?
                                                             <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
                                                             : 
@@ -341,7 +341,7 @@ export class MammalDetail extends Component {
                                                     />}>
                                                     <Card.Meta 
                                                         description={
-                                                            n.non_mammal__wiki_uri !== null 
+                                                            n.non_mammal__wiki_uri !== "None" 
                                                             ?
                                                             <a href={n.non_mammal__wiki_uri} target="_blank" rel="noreferrer">{n.non_mammal__name}</a>
                                                             : 
