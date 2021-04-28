@@ -148,7 +148,7 @@ export class SearchBar extends Component {
                             <Select.Option value="vulnerable">Vulnerable</Select.Option>
                             <Select.Option value="endangered species">Endangered</Select.Option>
                             <Select.Option value="critically endangered">Critically endangered</Select.Option>
-                            <Select.Option value="Near threatened">Near threatened</Select.Option>
+                            <Select.Option value="near threatened">Near threatened</Select.Option>
                             <Select.Option value="extinct in the wild">Extinct in the wild</Select.Option>
                             <Select.Option value="extinct species">Extinct</Select.Option>
                         </Select> 
